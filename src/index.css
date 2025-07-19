@@ -1,0 +1,246 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Luxury Celebrity Booking Platform Design System
+   Premium glassmorphism aesthetic with sophisticated color palette
+   All colors MUST be HSL.
+*/
+
+@layer base {
+  :root {
+    /* Base colors - Deep luxury theme */
+    --background: 220 15% 3%;
+    --foreground: 0 0% 98%;
+
+    /* Glass morphism surfaces */
+    --card: 220 15% 8%;
+    --card-foreground: 0 0% 95%;
+
+    --popover: 220 15% 5%;
+    --popover-foreground: 0 0% 98%;
+
+    /* Premium accent colors */
+    --primary: 45 100% 70%;  /* Luxury gold */
+    --primary-foreground: 220 15% 3%;
+
+    --secondary: 220 15% 15%;
+    --secondary-foreground: 0 0% 90%;
+
+    --muted: 220 15% 10%;
+    --muted-foreground: 0 0% 60%;
+
+    --accent: 200 100% 60%;  /* Electric blue accent */
+    --accent-foreground: 220 15% 3%;
+
+    --destructive: 0 85% 60%;
+    --destructive-foreground: 0 0% 98%;
+
+    /* Glass borders and inputs */
+    --border: 0 0% 100% / 0.1;
+    --input: 0 0% 100% / 0.05;
+    --ring: 45 100% 70%;
+
+    /* Luxury gradients */
+    --gradient-primary: linear-gradient(135deg, hsl(45 100% 70%), hsl(45 100% 85%));
+    --gradient-glass: linear-gradient(135deg, rgba(255,255,255,0.1), rgba(255,255,255,0.05));
+    --gradient-accent: linear-gradient(135deg, hsl(200 100% 60%), hsl(200 100% 70%));
+    --gradient-hero: linear-gradient(135deg, hsl(220 15% 3%) 0%, hsl(220 15% 8%) 100%);
+
+    /* Glass effects */
+    --glass-border: rgba(255, 255, 255, 0.1);
+    --glass-bg: rgba(255, 255, 255, 0.05);
+    --glass-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+
+    /* Premium shadows */
+    --shadow-luxury: 0 20px 60px -10px rgba(0, 0, 0, 0.8);
+    --shadow-glass: 0 8px 32px rgba(0, 0, 0, 0.3);
+    --shadow-glow: 0 0 40px rgba(255, 215, 0, 0.3);
+
+    /* Animations */
+    --transition-luxury: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    --transition-glass: backdrop-filter 0.3s ease;
+
+    --radius: 1rem;
+
+    --sidebar-background: 0 0% 98%;
+
+    --sidebar-foreground: 240 5.3% 26.1%;
+
+    --sidebar-primary: 240 5.9% 10%;
+
+    --sidebar-primary-foreground: 0 0% 98%;
+
+    --sidebar-accent: 240 4.8% 95.9%;
+
+    --sidebar-accent-foreground: 240 5.9% 10%;
+
+    --sidebar-border: 220 13% 91%;
+
+    --sidebar-ring: 217.2 91.2% 59.8%;
+  }
+
+  .dark {
+    --background: 222.2 84% 4.9%;
+    --foreground: 210 40% 98%;
+
+    --card: 222.2 84% 4.9%;
+    --card-foreground: 210 40% 98%;
+
+    --popover: 222.2 84% 4.9%;
+    --popover-foreground: 210 40% 98%;
+
+    --primary: 210 40% 98%;
+    --primary-foreground: 222.2 47.4% 11.2%;
+
+    --secondary: 217.2 32.6% 17.5%;
+    --secondary-foreground: 210 40% 98%;
+
+    --muted: 217.2 32.6% 17.5%;
+    --muted-foreground: 215 20.2% 65.1%;
+
+    --accent: 217.2 32.6% 17.5%;
+    --accent-foreground: 210 40% 98%;
+
+    --destructive: 0 62.8% 30.6%;
+    --destructive-foreground: 210 40% 98%;
+
+    --border: 217.2 32.6% 17.5%;
+    --input: 217.2 32.6% 17.5%;
+    --ring: 212.7 26.8% 83.9%;
+    --sidebar-background: 240 5.9% 10%;
+    --sidebar-foreground: 240 4.8% 95.9%;
+    --sidebar-primary: 224.3 76.3% 48%;
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 240 3.7% 15.9%;
+    --sidebar-accent-foreground: 240 4.8% 95.9%;
+    --sidebar-border: 240 3.7% 15.9%;
+    --sidebar-ring: 217.2 91.2% 59.8%;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply bg-background text-foreground antialiased;
+    font-family: 'Inter', system-ui, -apple-system, sans-serif;
+    background: var(--gradient-hero);
+    min-height: 100vh;
+  }
+}
+
+@layer components {
+  /* Glassmorphism effects */
+  .glass {
+    background: var(--glass-bg);
+    backdrop-filter: blur(20px);
+    border: 1px solid var(--glass-border);
+    box-shadow: var(--glass-shadow);
+  }
+
+  /* Mobile-optimized glass effects */
+  @media (max-width: 768px) {
+    .glass {
+      backdrop-filter: blur(10px);
+      background: rgba(255, 255, 255, 0.08);
+    }
+  }
+
+  .glass-card {
+    @apply glass rounded-2xl p-6 transition-all duration-300;
+  }
+
+  .glass-hover {
+    @apply glass-card hover:bg-white/[0.08] hover:border-white/20 hover:shadow-xl;
+  }
+
+  /* Premium button variants */
+  .btn-luxury {
+    @apply bg-gradient-to-r from-primary to-primary/80 text-primary-foreground;
+    @apply px-8 py-4 rounded-xl font-semibold tracking-wide;
+    @apply shadow-lg hover:shadow-glow transition-all duration-300;
+    @apply hover:scale-105 hover:brightness-110;
+    @apply active:scale-95 touch-manipulation;
+  }
+
+  .btn-glass {
+    @apply glass px-6 py-3 rounded-lg font-medium;
+    @apply hover:bg-white/10 hover:border-white/30;
+    @apply transition-all duration-300;
+    @apply active:scale-95 touch-manipulation;
+  }
+
+  /* Luxury animations */
+  .fade-in {
+    animation: fadeIn 0.8s ease-out forwards;
+  }
+
+  .slide-up {
+    animation: slideUp 0.6s ease-out forwards;
+  }
+
+  .glow-hover:hover {
+    box-shadow: var(--shadow-glow);
+    transition: var(--transition-luxury);
+  }
+
+  /* Custom scrollbar */
+  .luxury-scroll::-webkit-scrollbar {
+    width: 8px;
+  }
+
+  .luxury-scroll::-webkit-scrollbar-track {
+    background: var(--glass-bg);
+    border-radius: 4px;
+  }
+
+  .luxury-scroll::-webkit-scrollbar-thumb {
+    background: var(--gradient-primary);
+    border-radius: 4px;
+  }
+
+  .luxury-scroll::-webkit-scrollbar-thumb:hover {
+    background: var(--primary);
+  }
+}
+
+@layer utilities {
+  /* Custom keyframes */
+  @keyframes fadeIn {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  @keyframes slideUp {
+    from { opacity: 0; transform: translateY(40px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  @keyframes glow {
+    0%, 100% { box-shadow: 0 0 20px rgba(255, 215, 0, 0.3); }
+    50% { box-shadow: 0 0 40px rgba(255, 215, 0, 0.6); }
+  }
+
+  /* Backdrop blur utilities */
+  .backdrop-luxury {
+    backdrop-filter: blur(20px) saturate(180%);
+  }
+
+  /* Text gradients */
+  .text-gradient-primary {
+    background: var(--gradient-primary);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  .text-gradient-accent {
+    background: var(--gradient-accent);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+}

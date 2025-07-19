@@ -1,0 +1,8 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<svg width='32' height='32' viewBox='0 0 32 32' xmlns='http://www.w3.org/2000/svg'>
+  <rect width='32' height='32' fill='#000000'/>
+  <path d='M16 4L19 12L28 12L21 18L24 28L16 22L8 28L11 18L4 12L13 12L16 4Z' 
+        fill='#FFD700' 
+        stroke='#FFA500' 
+        stroke-width='0.5'/>
+</svg>
