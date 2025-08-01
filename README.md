@@ -20,13 +20,28 @@ A premium React-based celebrity booking platform with a secure admin dashboard.
 
 ## 🚀 Quick Start
 
-### Option 1: Start Both Applications (Recommended)
+### ⚠️ **IMPORTANT: Security Setup Required**
+
+**Before starting the application, you MUST configure environment variables:**
 
 ```bash
-# Install admin dependencies first
-npm run admin:install
+# 1. Run automated setup (recommended)
+npm run setup
 
-# Start both frontend and admin dashboard
+# 2. OR manually copy environment templates
+cp .env.example .env
+cp backend/.env.example backend/.env  
+cp admin-dashboard/.env.example admin-dashboard/.env
+
+# 3. Edit each .env file with your actual values
+# REQUIRED: Set strong passwords for ADMIN_PASSWORD and MANAGEMENT_PASSWORD
+```
+
+### Option 1: Start All Services (Recommended)
+
+```bash
+# Install all dependencies and start services
+npm run fullstack:install
 npm run start:all
 ```
 
@@ -121,17 +136,33 @@ liquid-glow-booking-verse/
 
 ## 🛡️ Security Architecture
 
+### 🔒 Security Features
+- **Environment Security**: All credentials in environment variables (no hardcoded secrets)
+- **Input Sanitization**: DOMPurify, XSS prevention, SQL injection protection
+- **Authentication**: JWT tokens with refresh, role-based access control (RBAC)
+- **File Upload Security**: Type validation, size limits, virus scanning
+- **CORS Protection**: Whitelist-based origin validation
+- **Security Headers**: CSP, HSTS, X-Frame-Options, XSS protection
+- **Rate Limiting**: Comprehensive API rate limiting
+- **Secure Communications**: HTTPS enforcement, secure cookie handling
+
 ### Frontend (Public Site)
 - **Port**: 8080
 - **Access**: Public
 - **Features**: Celebrity browsing, search, profiles
-- **Security**: No admin code exposed
+- **Security**: No admin code exposed, client-side validation
 
 ### Admin Dashboard
 - **Port**: 3001
 - **Access**: Admin only
 - **Features**: Celebrity management, site settings
-- **Security**: Separate application, token authentication
+- **Security**: Separate application, JWT authentication, RBAC
+
+### Backend API
+- **Port**: 3000
+- **Access**: API endpoints with authentication
+- **Security**: Comprehensive middleware stack, input validation
+- **Database**: Supabase with Row Level Security (RLS)
 
 ## 🎨 Tech Stack
 

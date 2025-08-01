@@ -4,8 +4,10 @@
   "version": "0.0.0",
   "type": "module",
   "scripts": {
-    "dev": "vite",
-    "build": "tsc && vite build",
+    "validate-env": "node validate-environment.js",
+    "setup": "./setup-environment.sh",
+    "dev": "npm run validate-env && vite",
+    "build": "npm run validate-env && tsc && vite build",
     "build:dev": "vite build --mode development",
     "build:analyze": "npm run build && npm run bundle:analyze",
     "lint": "eslint .",
@@ -177,10 +179,7 @@
   "jest": {
     "preset": "ts-jest",
     "testEnvironment": "jsdom",
-    "setupFilesAfterEnv": [
-      "<rootDir>/src/setupTests.ts"
-    ],
-    "moduleNameMapping": {
+    "moduleNameMappings": {
       "^@/(.*)$": "<rootDir>/src/$1"
     },
     "collectCoverageFrom": [

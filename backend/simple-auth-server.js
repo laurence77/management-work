@@ -4,8 +4,26 @@ const cors = require('cors');
 const app = express();
 const PORT = 3000;
 
+// Secure CORS configuration
+const allowedOrigins = [
+  'http://localhost:3000',
+  'http://localhost:3001', 
+  'http://localhost:8080',
+  'https://bookmyreservation.org',
+  'https://admin.bookmyreservation.org'
+];
+
 app.use(cors({
-  origin: true, // Allow all origins for testing
+  origin: (origin, callback) => {
+    // Allow requests with no origin (like mobile apps or curl requests)
+    if (!origin) return callback(null, true);
+    
+    if (allowedOrigins.indexOf(origin) !== -1) {
+      callback(null, true);
+    } else {
+      callback(new Error('Not allowed by CORS'));
+    }
+  },
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization', 'Access-Control-Allow-Origin'],
@@ -17,12 +35,19 @@ app.use(express.json());
 // Import crypto routes
 const cryptoRoutes = require('./routes/crypto');
 
+// Validate required environment variables
+if (!process.env.ADMIN_PASSWORD) {
+  console.error('❌ SECURITY ERROR: ADMIN_PASSWORD environment variable is required!');
+  console.error('Please set ADMIN_PASSWORD environment variable and restart the server.');
+  process.exit(1);
+}
+
 // In-memory user store for testing
 const users = [
   {
     id: 1,
     email: 'management@bookmyreservation.org',
-    password: 'process.env.ADMIN_PASSWORD || 'changeme123'',
+    password: process.env.ADMIN_PASSWORD,
     firstName: 'Admin',
     lastName: 'User',
     role: 'admin'

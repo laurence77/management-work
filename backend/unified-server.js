@@ -102,11 +102,18 @@ app.use(sanitizeInput);
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
 // In-memory data stores (replace with database in production)
+// Validate required environment variables
+if (!process.env.MANAGEMENT_PASSWORD || !process.env.ADMIN_PASSWORD) {
+  console.error('❌ SECURITY ERROR: MANAGEMENT_PASSWORD and ADMIN_PASSWORD environment variables are required!');
+  console.error('Please set these environment variables and restart the server.');
+  process.exit(1);
+}
+
 const users = [
   {
     id: 1,
     email: process.env.MANAGEMENT_EMAIL || 'management@bookmyreservation.org',
-    password: process.env.MANAGEMENT_PASSWORD || 'changeme123',
+    password: process.env.MANAGEMENT_PASSWORD,
     firstName: 'Management',
     lastName: 'Team',
     role: 'admin',
@@ -115,7 +122,7 @@ const users = [
   {
     id: 2,
     email: process.env.ADMIN_EMAIL || 'admin@eliteconnect.com',
-    password: process.env.ADMIN_PASSWORD || 'changeme123',
+    password: process.env.ADMIN_PASSWORD,
     firstName: 'Admin',
     lastName: 'User',
     role: 'admin',
