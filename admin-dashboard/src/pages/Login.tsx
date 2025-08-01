@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -6,32 +6,56 @@ import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Lock, User, AlertCircle, Shield } from 'lucide-react';
-import { api } from '@/lib/api';
+import { useAuth } from '@/hooks/useAuth';
+import { useToast } from '@/hooks/useToast';
 
 const Login = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
-  const [loading, setLoading] = useState(false);
+  const { login, isAuthenticated, isLoading } = useAuth();
+  const { toast } = useToast();
   const navigate = useNavigate();
+
+  // Redirect if already authenticated
+  useEffect(() => {
+    console.log('🔲 LOGIN FORM: Auth state changed, isAuthenticated:', isAuthenticated);
+    if (isAuthenticated) {
+      console.log('🔲 LOGIN FORM: User is authenticated, redirecting to dashboard');
+      navigate('/dashboard', { replace: true });
+    }
+  }, [isAuthenticated, navigate]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setLoading(true);
     setError('');
+    console.log('🔲 LOGIN FORM: Form submitted', email);
 
     try {
-      // Temporary bypass for testing - accept any credentials
-      if (email && password) {
-        localStorage.setItem('admin_token', 'test-token');
+      const result = await login(email, password);
+      console.log('🔲 LOGIN FORM: Login result', result);
+      
+      if (result.success) {
+        console.log('🔲 LOGIN FORM: Login successful, showing toast and navigating');
+        toast({
+          title: 'Login successful',
+          description: 'Welcome back to the admin dashboard.',
+          type: 'success',
+        });
+        console.log('🔲 LOGIN FORM: About to navigate to /dashboard');
         navigate('/dashboard');
+        console.log('🔲 LOGIN FORM: Navigate called');
       } else {
-        setError('Please enter email and password');
+        setError(result.error || 'Login failed');
       }
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Login failed');
-    } finally {
-      setLoading(false);
+      const errorMessage = err instanceof Error ? err.message : 'Login failed';
+      setError(errorMessage);
+      toast({
+        title: 'Login failed',
+        description: errorMessage,
+        type: 'error',
+      });
     }
   };
 
@@ -73,6 +97,7 @@ const Login = () => {
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
                     className="pl-10"
+                    autoComplete="username"
                     required
                   />
                 </div>
@@ -89,6 +114,7 @@ const Login = () => {
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
                     className="pl-10"
+                    autoComplete="current-password"
                     required
                   />
                 </div>
@@ -97,9 +123,9 @@ const Login = () => {
               <Button
                 type="submit"
                 className="w-full bg-slate-900 hover:bg-slate-800"
-                disabled={loading}
+                disabled={isLoading}
               >
-                {loading ? 'Signing in...' : 'Sign In'}
+                {isLoading ? 'Signing in...' : 'Sign In'}
               </Button>
             </form>
 

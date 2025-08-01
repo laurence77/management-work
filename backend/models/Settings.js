@@ -90,14 +90,31 @@ class Settings {
   static getDefaultSettings() {
     return {
       // Basic site info
-      site_name: 'EliteConnect',
-      tagline: 'Connect with Elite Celebrities',
+      site_name: 'Celebrity Booking Platform',
+      tagline: 'Book Elite Celebrities',
       description: 'The premier platform for celebrity bookings and exclusive experiences.',
       
       // Contact information
-      contact_email: 'contact@eliteconnect.com',
+      contact_email: 'management@bookmyreservation.org',
       contact_phone: '+1 (555) 123-4567',
       address: 'Beverly Hills, CA 90210',
+      
+      // Email Settings
+      email: {
+        enabled: true,
+        smtpHost: process.env.SMTP_HOST || 'smtp.hostinger.com',
+        smtpPort: parseInt(process.env.SMTP_PORT) || 465,
+        smtpSecure: process.env.SMTP_SECURE === 'true',
+        smtpUser: process.env.SMTP_USER || 'management@bookmyreservation.org',
+        smtpPass: process.env.SMTP_PASS ? '***CONFIGURED***' : 'NOT SET',
+        fromEmail: process.env.EMAIL_FROM || 'management@bookmyreservation.org',
+        templates: {
+          welcome: 'Welcome to Celebrity Booking Platform',
+          booking_confirmation: 'Your booking has been confirmed',
+          booking_update: 'Your booking has been updated',
+          password_reset: 'Password reset request'
+        }
+      },
       
       // Social media links
       social_twitter: 'https://twitter.com/eliteconnect',

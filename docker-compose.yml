@@ -1,0 +1,35 @@
+version: '3.8'
+
+services:
+  n8n:
+    image: n8nio/n8n:latest
+    container_name: n8n-management
+    restart: unless-stopped
+    ports:
+      - "5678:5678"
+    
+    # Load environment variables from secure file
+    env_file:
+      - .env.docker.local  # Use local override file
+      - .env.docker        # Fallback to template file
+    
+    environment:
+      # Critical security setting
+      - N8N_BASIC_AUTH_ACTIVE=true
+      
+    volumes:
+      - ./n8n-data:/home/node/.n8n
+      # Mount local files if needed
+      - ./backend:/backend:ro
+    
+    # Network configuration to allow communication with host
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    
+    # Health check
+    healthcheck:
+      test: ["CMD-SHELL", "wget --no-verbose --tries=1 --spider http://localhost:5678/healthz || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s

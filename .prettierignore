@@ -1,0 +1,59 @@
+# Build outputs
+dist/
+build/
+coverage/
+.next/
+.nuxt/
+.cache/
+
+# Dependencies
+node_modules/
+bower_components/
+
+# Logs
+*.log
+logs/
+
+# Environment files
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+# IDE/Editor files
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS generated files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# Package manager files
+package-lock.json
+yarn.lock
+pnpm-lock.yaml
+
+# Test artifacts
+test-results/
+playwright-report/
+e2e/auth-state.json
+
+# Generated files
+*.min.js
+*.min.css
+public/sw.js
+public/workbox-*.js
+
+# Documentation
+CHANGELOG.md
+LICENSE
+README.md

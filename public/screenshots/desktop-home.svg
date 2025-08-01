@@ -1,0 +1,22 @@
+<svg width="1280" height="720" viewBox="0 0 1280 720" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <rect width="1280" height="720" fill="#f8fafc"/>
+  <!-- Header -->
+  <rect width="1280" height="80" fill="url(#headerGradient)"/>
+  <defs>
+    <linearGradient id="headerGradient" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" style="stop-color:#667eea;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#764ba2;stop-opacity:1" />
+    </linearGradient>
+  </defs>
+  <!-- Logo -->
+  <text x="60" y="50" font-family="Arial, sans-serif" font-size="24" font-weight="bold" fill="white">Celebrity Booking Platform</text>
+  <!-- Hero section -->
+  <rect x="80" y="120" width="1120" height="300" rx="16" fill="white"/>
+  <text x="640" y="180" font-family="Arial, sans-serif" font-size="48" font-weight="bold" text-anchor="middle" fill="#1e293b">Premium Celebrity Experiences</text>
+  <text x="640" y="220" font-family="Arial, sans-serif" font-size="20" text-anchor="middle" fill="#64748b">Book exclusive events with top celebrities</text>
+  <!-- Celebrity cards -->
+  <rect x="120" y="480" width="200" height="180" rx="12" fill="white"/>
+  <rect x="360" y="480" width="200" height="180" rx="12" fill="white"/>
+  <rect x="600" y="480" width="200" height="180" rx="12" fill="white"/>
+  <rect x="840" y="480" width="200" height="180" rx="12" fill="white"/>
+</svg>

@@ -1,0 +1,176 @@
+{
+  "name": "Celebrity Performance Monitor",
+  "nodes": [
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "hours",
+              "hoursInterval": 6
+            }
+          ]
+        }
+      },
+      "name": "Schedule Trigger",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.1,
+      "position": [240, 300],
+      "id": "schedule-trigger"
+    },
+    {
+      "parameters": {
+        "url": "{{$env.API_BASE_URL}}/api/analytics/celebrity-performance",
+        "authentication": "headerAuth",
+        "headerAuth": {
+          "name": "Authorization",
+          "value": "Bearer {{$env.API_TOKEN}}"
+        },
+        "options": {
+          "timeout": 30000
+        }
+      },
+      "name": "Get Celebrity Performance Data",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.1,
+      "position": [460, 300],
+      "id": "get-performance-data"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict"
+          },
+          "conditions": [
+            {
+              "leftValue": "={{ $json.data.length }}",
+              "rightValue": 0,
+              "operator": {
+                "type": "number",
+                "operation": "gt"
+              }
+            }
+          ],
+          "combinator": "and"
+        }
+      },
+      "name": "Check if Data Exists",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [680, 300],
+      "id": "check-data"
+    },
+    {
+      "parameters": {
+        "jsCode": "const performanceData = $input.first().json.data;\nconst alerts = [];\nconst insights = [];\n\n// Analyze each celebrity's performance\nfor (const celebrity of performanceData) {\n  const {\n    id,\n    name,\n    totalBookings,\n    totalRevenue,\n    averageRating,\n    bookingSuccessRate,\n    lastBookingDate,\n    pricePerBooking,\n    categoryAveragePrice,\n    trendingScore\n  } = celebrity;\n\n  // Alert: Low success rate\n  if (bookingSuccessRate < 0.7) {\n    alerts.push({\n      type: 'low_success_rate',\n      celebrity: { id, name },\n      metric: 'Success Rate',\n      value: `${(bookingSuccessRate * 100).toFixed(1)}%`,\n      threshold: '70%',\n      severity: 'medium',\n      recommendation: 'Review celebrity availability and booking requirements'\n    });\n  }\n\n  // Alert: Very low rating\n  if (averageRating < 3.5) {\n    alerts.push({\n      type: 'low_rating',\n      celebrity: { id, name },\n      metric: 'Average Rating',\n      value: averageRating.toFixed(1),\n      threshold: '3.5',\n      severity: 'high',\n      recommendation: 'Investigate customer feedback and consider quality improvements'\n    });\n  }\n\n  // Alert: No recent bookings (30+ days)\n  const daysSinceLastBooking = lastBookingDate ? \n    Math.floor((Date.now() - new Date(lastBookingDate).getTime()) / (1000 * 60 * 60 * 24)) : \n    999;\n  \n  if (daysSinceLastBooking > 30) {\n    alerts.push({\n      type: 'inactive_celebrity',\n      celebrity: { id, name },\n      metric: 'Days Since Last Booking',\n      value: daysSinceLastBooking,\n      threshold: '30',\n      severity: 'low',\n      recommendation: 'Consider promotional campaigns or price adjustments'\n    });\n  }\n\n  // Alert: Pricing significantly above category average\n  if (pricePerBooking > categoryAveragePrice * 1.5) {\n    alerts.push({\n      type: 'overpriced',\n      celebrity: { id, name },\n      metric: 'Price vs Category Average',\n      value: `$${pricePerBooking.toLocaleString()}`,\n      threshold: `$${(categoryAveragePrice * 1.5).toLocaleString()}`,\n      severity: 'low',\n      recommendation: 'Review pricing strategy for competitive positioning'\n    });\n  }\n\n  // Insight: High performer\n  if (bookingSuccessRate > 0.9 && averageRating > 4.5) {\n    insights.push({\n      type: 'high_performer',\n      celebrity: { id, name },\n      metrics: {\n        successRate: `${(bookingSuccessRate * 100).toFixed(1)}%`,\n        rating: averageRating.toFixed(1),\n        totalRevenue: `$${totalRevenue.toLocaleString()}`\n      },\n      recommendation: 'Consider featuring in premium marketing campaigns'\n    });\n  }\n\n  // Insight: Rising star\n  if (trendingScore > 80 && totalBookings < 10) {\n    insights.push({\n      type: 'rising_star',\n      celebrity: { id, name },\n      metrics: {\n        trendingScore: trendingScore.toFixed(1),\n        totalBookings: totalBookings\n      },\n      recommendation: 'Potential for increased marketing and promotion'\n    });\n  }\n\n  // Insight: Revenue driver\n  if (totalRevenue > 100000) {\n    insights.push({\n      type: 'revenue_driver',\n      celebrity: { id, name },\n      metrics: {\n        totalRevenue: `$${totalRevenue.toLocaleString()}`,\n        totalBookings: totalBookings\n      },\n      recommendation: 'Key account - ensure premium service and retention'\n    });\n  }\n}\n\n// Summary statistics\nconst summary = {\n  totalCelebrities: performanceData.length,\n  alertsGenerated: alerts.length,\n  insightsGenerated: insights.length,\n  averageSuccessRate: (performanceData.reduce((sum, c) => sum + c.bookingSuccessRate, 0) / performanceData.length * 100).toFixed(1) + '%',\n  averageRating: (performanceData.reduce((sum, c) => sum + c.averageRating, 0) / performanceData.length).toFixed(1),\n  totalRevenue: '$' + performanceData.reduce((sum, c) => sum + c.totalRevenue, 0).toLocaleString()\n};\n\nreturn {\n  summary,\n  alerts,\n  insights,\n  timestamp: new Date().toISOString()\n};"
+      },
+      "name": "Analyze Performance Data",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [900, 200],
+      "id": "analyze-data"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict"
+          },
+          "conditions": [
+            {
+              "leftValue": "={{ $json.alerts.length }}",
+              "rightValue": 0,
+              "operator": {
+                "type": "number",
+                "operation": "gt"
+              }
+            }
+          ],
+          "combinator": "and"
+        }
+      },
+      "name": "Check for Critical Alerts",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [1120, 200],
+      "id": "check-alerts"
+    },
+    {
+      "parameters": {
+        "url": "{{$env.API_BASE_URL}}/api/notifications/celebrity-alerts",
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "alerts",
+              "value": "={{ $json.alerts }}"
+            },
+            {
+              "name": "summary",
+              "value": "={{ $json.summary }}"
+            },
+            {
+              "name": "timestamp",
+              "value": "={{ $json.timestamp }}"
+            }
+          ]
+        },
+        "authentication": "headerAuth",
+        "headerAuth": {
+          "name": "Authorization",
+          "value": "Bearer {{$env.API_TOKEN}}"
+        },
+        "options": {
+          "timeout": 15000
+        }
+      },
+      "name": "Send Critical Alerts",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.1,
+      "position": [1340, 120],
+      "id": "send-alerts"
+    },
+    {
+      "parameters": {
+        "jsCode": "const data = $input.first().json;\nconst { alerts, insights, summary } = data;\n\n// Filter high and medium severity alerts\nconst criticalAlerts = alerts.filter(alert => \n  alert.severity === 'high' || alert.severity === 'medium'\n);\n\n// Create email content\nlet emailContent = `\n<h2>🎭 Celebrity Performance Report</h2>\n<p><strong>Generated:</strong> ${new Date().toLocaleString()}</p>\n\n<h3>📊 Summary</h3>\n<ul>\n  <li><strong>Total Celebrities:</strong> ${summary.totalCelebrities}</li>\n  <li><strong>Average Success Rate:</strong> ${summary.averageSuccessRate}</li>\n  <li><strong>Average Rating:</strong> ${summary.averageRating}</li>\n  <li><strong>Total Revenue:</strong> ${summary.totalRevenue}</li>\n</ul>\n`;\n\nif (criticalAlerts.length > 0) {\n  emailContent += `\n<h3>🚨 Critical Alerts (${criticalAlerts.length})</h3>\n<ul>`;\n  \n  criticalAlerts.forEach(alert => {\n    const severityEmoji = alert.severity === 'high' ? '🔴' : '🟡';\n    emailContent += `\n    <li>${severityEmoji} <strong>${alert.celebrity.name}</strong> - ${alert.metric}: ${alert.value} (threshold: ${alert.threshold})\n        <br><small><em>Recommendation: ${alert.recommendation}</em></small>\n    </li>`;\n  });\n  \n  emailContent += `\n</ul>`;\n}\n\nif (insights.length > 0) {\n  emailContent += `\n<h3>💡 Key Insights (${insights.length})</h3>\n<ul>`;\n  \n  insights.forEach(insight => {\n    const typeEmoji = {\n      'high_performer': '⭐',\n      'rising_star': '🌟',\n      'revenue_driver': '💰'\n    }[insight.type] || '📈';\n    \n    emailContent += `\n    <li>${typeEmoji} <strong>${insight.celebrity.name}</strong> - ${insight.type.replace('_', ' ')}\n        <br><small><em>${insight.recommendation}</em></small>\n    </li>`;\n  });\n  \n  emailContent += `\n</ul>`;\n}\n\nreturn {\n  subject: `Celebrity Performance Report - ${criticalAlerts.length} Alerts, ${insights.length} Insights`,\n  html: emailContent,\n  hasAlerts: criticalAlerts.length > 0,\n  alertCount: criticalAlerts.length,\n  insightCount: insights.length\n};"
+      },
+      "name": "Format Email Report",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [1120, 400],
+      "id": "format-email"
+    },
+    {
+      "parameters": {
+        "authentication": "generic",
+        "genericAuthType": "httpHeaderAuth",
+        "httpHeaderAuth": {
+          "name": "Authorization",
+          "value": "Bearer {{$env.API_TOKEN}}"
+        },
+        "requestMethod": "POST",
+        "url": "{{$env.API_BASE_URL}}/api/email/send",
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "to",
+              "value": "{{$env.ADMIN_EMAIL}}"
+            },
+            {
+              "name": "subject",
+              "value": "={{ $json.subject }}"
+            },
+            {
+              "name": "html",
+              "value": "={{ $json.html }}"
+            },
+            {
+              "name": "priority",
+              "value": "={{ $json.hasAlerts ? 'high' : 'normal' }}"
+            }\n          ]\n        },\n        \"options\": {\n          \"timeout\": 15000\n        }\n      },\n      \"name\": \"Send Email Report\",\n      \"type\": \"n8n-nodes-base.httpRequest\",\n      \"typeVersion\": 4.1,\n      \"position\": [1340, 400],\n      \"id\": \"send-email\"\n    },\n    {\n      \"parameters\": {\n        \"url\": \"{{$env.API_BASE_URL}}/api/analytics/performance-history\",\n        \"sendBody\": true,\n        \"bodyParameters\": {\n          \"parameters\": [\n            {\n              \"name\": \"data\",\n              \"value\": \"={{ $('Get Celebrity Performance Data').first().json.data }}\"\n            },\n            {\n              \"name\": \"timestamp\",\n              \"value\": \"={{ new Date().toISOString() }}\"\n            },\n            {\n              \"name\": \"alerts\",\n              \"value\": \"={{ $('Analyze Performance Data').first().json.alerts }}\"\n            }\n          ]\n        },\n        \"authentication\": \"headerAuth\",\n        \"headerAuth\": {\n          \"name\": \"Authorization\",\n          \"value\": \"Bearer {{$env.API_TOKEN}}\"\n        }\n      },\n      \"name\": \"Store Historical Data\",\n      \"type\": \"n8n-nodes-base.httpRequest\",\n      \"typeVersion\": 4.1,\n      \"position\": [1340, 280],\n      \"id\": \"store-history\"\n    },\n    {\n      \"parameters\": {\n        \"jsCode\": \"// Log workflow completion\\nconsole.log('Celebrity Performance Monitor completed successfully');\\nconsole.log('Alerts generated:', $input.first().json.alertCount);\\nconsole.log('Insights generated:', $input.first().json.insightCount);\\n\\nreturn {\\n  status: 'completed',\\n  executionTime: new Date().toISOString(),\\n  alertsProcessed: $input.first().json.alertCount,\\n  insightsGenerated: $input.first().json.insightCount\\n};\"\n      },\n      \"name\": \"Log Completion\",\n      \"type\": \"n8n-nodes-base.code\",\n      \"typeVersion\": 2,\n      \"position\": [1560, 300],\n      \"id\": \"log-completion\"\n    }\n  ],\n  \"connections\": {\n    \"Schedule Trigger\": {\n      \"main\": [\n        [\n          {\n            \"node\": \"Get Celebrity Performance Data\",\n            \"type\": \"main\",\n            \"index\": 0\n          }\n        ]\n      ]\n    },\n    \"Get Celebrity Performance Data\": {\n      \"main\": [\n        [\n          {\n            \"node\": \"Check if Data Exists\",\n            \"type\": \"main\",\n            \"index\": 0\n          }\n        ]\n      ]\n    },\n    \"Check if Data Exists\": {\n      \"main\": [\n        [\n          {\n            \"node\": \"Analyze Performance Data\",\n            \"type\": \"main\",\n            \"index\": 0\n          }\n        ],\n        []\n      ]\n    },\n    \"Analyze Performance Data\": {\n      \"main\": [\n        [\n          {\n            \"node\": \"Check for Critical Alerts\",\n            \"type\": \"main\",\n            \"index\": 0\n          },\n          {\n            \"node\": \"Format Email Report\",\n            \"type\": \"main\",\n            \"index\": 0\n          }\n        ]\n      ]\n    },\n    \"Check for Critical Alerts\": {\n      \"main\": [\n        [\n          {\n            \"node\": \"Send Critical Alerts\",\n            \"type\": \"main\",\n            \"index\": 0\n          }\n        ],\n        []\n      ]\n    },\n    \"Format Email Report\": {\n      \"main\": [\n        [\n          {\n            \"node\": \"Send Email Report\",\n            \"type\": \"main\",\n            \"index\": 0\n          },\n          {\n            \"node\": \"Store Historical Data\",\n            \"type\": \"main\",\n            \"index\": 0\n          }\n        ]\n      ]\n    },\n    \"Send Email Report\": {\n      \"main\": [\n        [\n          {\n            \"node\": \"Log Completion\",\n            \"type\": \"main\",\n            \"index\": 0\n          }\n        ]\n      ]\n    },\n    \"Store Historical Data\": {\n      \"main\": [\n        []\n      ]\n    }\n  },\n  \"settings\": {\n    \"executionOrder\": \"v1\"\n  },\n  \"staticData\": null,\n  \"tags\": [\n    {\n      \"createdAt\": \"2024-01-01T00:00:00.000Z\",\n      \"updatedAt\": \"2024-01-01T00:00:00.000Z\",\n      \"id\": \"celebrity-monitoring\",\n      \"name\": \"Celebrity Monitoring\"\n    }\n  ],\n  \"triggerCount\": 1,\n  \"updatedAt\": \"2024-01-01T00:00:00.000Z\",\n  \"versionId\": \"1\"\n}"

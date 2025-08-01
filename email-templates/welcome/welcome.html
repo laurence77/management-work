@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Welcome to Celebrity Booking Platform</title>
+    <style>
+        body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }
+        .container { max-width: 600px; margin: 0 auto; padding: 20px; }
+        .header { background: #2563eb; color: white; padding: 20px; text-align: center; }
+        .content { padding: 20px; background: #f9fafb; }
+        .footer { padding: 20px; text-align: center; font-size: 14px; color: #666; }
+        .button { background: #2563eb; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px; display: inline-block; margin: 10px 0; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>Welcome {{firstName}}!</h1>
+        </div>
+        <div class="content">
+            <h2>Thank you for joining Celebrity Booking Platform</h2>
+            <p>Hi {{firstName}},</p>
+            <p>We're excited to have you on board! Your account has been successfully created and you can now start exploring our amazing celebrity booking services.</p>
+            
+            <p>Here's what you can do next:</p>
+            <ul>
+                <li>Browse our celebrity directory</li>
+                <li>Submit booking requests</li>
+                <li>Manage your profile and preferences</li>
+                <li>Track your booking status</li>
+            </ul>
+            
+            <a href="{{dashboardUrl}}" class="button">Go to Dashboard</a>
+            
+            <p>If you have any questions, feel free to contact our support team.</p>
+            
+            <p>Best regards,<br>The Celebrity Booking Platform Team</p>
+        </div>
+        <div class="footer">
+            <p>&copy; 2024 Celebrity Booking Platform. All rights reserved.</p>
+            <p><a href="{{unsubscribeUrl}}">Unsubscribe</a> | <a href="{{supportUrl}}">Support</a></p>
+        </div>
+    </div>
+</body>
+</html>

@@ -1,0 +1,47 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: celebrity-booking-config
+  namespace: production
+  labels:
+    app: celebrity-booking-api
+    environment: production
+data:
+  # SMTP Configuration
+  smtp-host: "smtp.sendgrid.net"
+  smtp-port: "587"
+  smtp-secure: "true"
+  
+  # Database Configuration
+  db-pool-min: "2"
+  db-pool-max: "20"
+  
+  # Logging Configuration
+  log-level: "info"
+  
+  # Backup Configuration
+  max-backups: "30"
+  backup-max-age-days: "30"
+  
+  # Cache Configuration
+  redis-timeout: "5000"
+  
+  # Rate Limiting
+  rate-limit-window: "900000"
+  rate-limit-max: "100"
+  
+  # File Upload
+  max-file-size: "10485760"
+  allowed-file-types: "image/jpeg,image/png,image/gif,image/webp"
+  
+  # Security
+  cors-origin: "https://bookmyreservation.org,https://admin.bookmyreservation.org"
+  session-timeout: "86400000"
+  
+  # Performance
+  compression-level: "6"
+  compression-threshold: "1024"
+  
+  # Monitoring
+  metrics-enabled: "true"
+  health-check-interval: "30000"

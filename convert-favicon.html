@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Favicon Converter</title>
+</head>
+<body>
+    <canvas id="canvas" width="32" height="32" style="border: 1px solid #ccc;"></canvas>
+    <br><br>
+    <button onclick="generateFavicon()">Generate ICO</button>
+    <br><br>
+    <a id="download" style="display:none;">Download favicon.ico</a>
+
+    <script>
+        function generateFavicon() {
+            const canvas = document.getElementById('canvas');
+            const ctx = canvas.getContext('2d');
+            
+            // Clear canvas
+            ctx.clearRect(0, 0, 32, 32);
+            
+            // Create gradient background
+            const bgGradient = ctx.createLinearGradient(0, 0, 32, 32);
+            bgGradient.addColorStop(0, '#0f172a');
+            bgGradient.addColorStop(1, '#1e293b');
+            
+            // Draw background circle
+            ctx.beginPath();
+            ctx.arc(16, 16, 15, 0, 2 * Math.PI);
+            ctx.fillStyle = bgGradient;
+            ctx.fill();
+            ctx.strokeStyle = '#334155';
+            ctx.lineWidth = 1;
+            ctx.stroke();
+            
+            // Create star gradient
+            const starGradient = ctx.createLinearGradient(0, 0, 32, 32);
+            starGradient.addColorStop(0, '#fbbf24');
+            starGradient.addColorStop(0.5, '#f59e0b');
+            starGradient.addColorStop(1, '#d97706');
+            
+            // Draw main star
+            ctx.beginPath();
+            const star = createStarPath(16, 16, 8, 5);
+            ctx.fill(star);
+            ctx.fillStyle = starGradient;
+            ctx.fill();
+            ctx.strokeStyle = '#fbbf24';
+            ctx.lineWidth = 0.3;
+            ctx.stroke();
+            
+            // Draw sparkles
+            drawSparkle(8, 9, 0.8);
+            drawSparkle(24, 11, 0.8);
+            drawSparkle(7, 23, 0.8);
+            drawSparkle(25, 25, 0.8);
+            
+            function drawSparkle(x, y, radius) {
+                ctx.beginPath();
+                ctx.arc(x, y, radius, 0, 2 * Math.PI);
+                ctx.fillStyle = '#fbbf24';
+                ctx.globalAlpha = 0.9;
+                ctx.fill();
+                ctx.globalAlpha = 1;
+            }
+            
+            function createStarPath(cx, cy, outerRadius, innerRadius) {
+                const path = new Path2D();
+                const points = 5;
+                const angle = Math.PI / points;
+                
+                for (let i = 0; i < 2 * points; i++) {
+                    const radius = i % 2 === 0 ? outerRadius : innerRadius;
+                    const x = cx + Math.cos(i * angle - Math.PI/2) * radius;
+                    const y = cy + Math.sin(i * angle - Math.PI/2) * radius;
+                    
+                    if (i === 0) {
+                        path.moveTo(x, y);
+                    } else {
+                        path.lineTo(x, y);
+                    }
+                }
+                path.closePath();
+                return path;
+            }
+            
+            // Convert to blob and create download link
+            canvas.toBlob(function(blob) {
+                const url = URL.createObjectURL(blob);
+                const download = document.getElementById('download');
+                download.href = url;
+                download.download = 'favicon.ico';
+                download.style.display = 'block';
+                download.textContent = 'Download favicon.ico';
+            }, 'image/png'); // Note: Modern browsers support PNG favicons
+        }
+    </script>
+</body>
+</html>

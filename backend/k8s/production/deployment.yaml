@@ -1,0 +1,222 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: celebrity-booking-api
+  namespace: production
+  labels:
+    app: celebrity-booking-api
+    version: v1
+    environment: production
+spec:
+  replicas: 3
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxUnavailable: 1
+      maxSurge: 1
+  selector:
+    matchLabels:
+      app: celebrity-booking-api
+  template:
+    metadata:
+      labels:
+        app: celebrity-booking-api
+        version: v1
+      annotations:
+        prometheus.io/scrape: "true"
+        prometheus.io/port: "3000"
+        prometheus.io/path: "/metrics/prometheus"
+    spec:
+      serviceAccountName: celebrity-booking-api
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 1001
+        runAsGroup: 1001
+        fsGroup: 1001
+      containers:
+      - name: api
+        image: ghcr.io/celebrity-booking/api:latest
+        imagePullPolicy: Always
+        ports:
+        - containerPort: 3000
+          protocol: TCP
+        env:
+        - name: NODE_ENV
+          value: "production"
+        - name: PORT
+          value: "3000"
+        - name: DATABASE_URL
+          valueFrom:
+            secretKeyRef:
+              name: celebrity-booking-secrets
+              key: database-url
+        - name: REDIS_URL
+          valueFrom:
+            secretKeyRef:
+              name: celebrity-booking-secrets
+              key: redis-url
+        - name: JWT_SECRET
+          valueFrom:
+            secretKeyRef:
+              name: celebrity-booking-secrets
+              key: jwt-secret
+        - name: ADMIN_EMAIL
+          valueFrom:
+            secretKeyRef:
+              name: celebrity-booking-secrets
+              key: admin-email
+        - name: ADMIN_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: celebrity-booking-secrets
+              key: admin-password
+        - name: MANAGEMENT_EMAIL
+          valueFrom:
+            secretKeyRef:
+              name: celebrity-booking-secrets
+              key: management-email
+        - name: MANAGEMENT_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: celebrity-booking-secrets
+              key: management-password
+        - name: CLOUDINARY_CLOUD_NAME
+          valueFrom:
+            secretKeyRef:
+              name: celebrity-booking-secrets
+              key: cloudinary-cloud-name
+        - name: CLOUDINARY_API_KEY
+          valueFrom:
+            secretKeyRef:
+              name: celebrity-booking-secrets
+              key: cloudinary-api-key
+        - name: CLOUDINARY_API_SECRET
+          valueFrom:
+            secretKeyRef:
+              name: celebrity-booking-secrets
+              key: cloudinary-api-secret
+        - name: SMTP_HOST
+          valueFrom:
+            configMapKeyRef:
+              name: celebrity-booking-config
+              key: smtp-host
+        - name: SMTP_PORT
+          valueFrom:
+            configMapKeyRef:
+              name: celebrity-booking-config
+              key: smtp-port
+        - name: SMTP_SECURE
+          valueFrom:
+            configMapKeyRef:
+              name: celebrity-booking-config
+              key: smtp-secure
+        - name: SMTP_USER
+          valueFrom:
+            secretKeyRef:
+              name: celebrity-booking-secrets
+              key: smtp-user
+        - name: SMTP_PASS
+          valueFrom:
+            secretKeyRef:
+              name: celebrity-booking-secrets
+              key: smtp-pass
+        - name: SENTRY_DSN
+          valueFrom:
+            secretKeyRef:
+              name: celebrity-booking-secrets
+              key: sentry-dsn
+        - name: LOG_LEVEL
+          valueFrom:
+            configMapKeyRef:
+              name: celebrity-booking-config
+              key: log-level
+        - name: DB_POOL_MIN
+          valueFrom:
+            configMapKeyRef:
+              name: celebrity-booking-config
+              key: db-pool-min
+        - name: DB_POOL_MAX
+          valueFrom:
+            configMapKeyRef:
+              name: celebrity-booking-config
+              key: db-pool-max
+        - name: BACKUP_DIR
+          value: "/app/backups"
+        - name: MAX_BACKUPS
+          valueFrom:
+            configMapKeyRef:
+              name: celebrity-booking-config
+              key: max-backups
+        resources:
+          requests:
+            memory: "256Mi"
+            cpu: "100m"
+          limits:
+            memory: "512Mi"
+            cpu: "500m"
+        livenessProbe:
+          httpGet:
+            path: /health/live
+            port: 3000
+          initialDelaySeconds: 30
+          periodSeconds: 10
+          timeoutSeconds: 5
+          failureThreshold: 3
+        readinessProbe:
+          httpGet:
+            path: /health/ready
+            port: 3000
+          initialDelaySeconds: 15
+          periodSeconds: 5
+          timeoutSeconds: 3
+          failureThreshold: 3
+        startupProbe:
+          httpGet:
+            path: /health
+            port: 3000
+          initialDelaySeconds: 10
+          periodSeconds: 10
+          timeoutSeconds: 5
+          failureThreshold: 30
+        volumeMounts:
+        - name: uploads
+          mountPath: /app/uploads
+        - name: logs
+          mountPath: /app/logs
+        - name: backups
+          mountPath: /app/backups
+        securityContext:
+          allowPrivilegeEscalation: false
+          readOnlyRootFilesystem: false
+          runAsNonRoot: true
+          runAsUser: 1001
+          capabilities:
+            drop:
+            - ALL
+      volumes:
+      - name: uploads
+        persistentVolumeClaim:
+          claimName: celebrity-booking-uploads
+      - name: logs
+        persistentVolumeClaim:
+          claimName: celebrity-booking-logs
+      - name: backups
+        persistentVolumeClaim:
+          claimName: celebrity-booking-backups
+      affinity:
+        podAntiAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+          - weight: 100
+            podAffinityTerm:
+              labelSelector:
+                matchExpressions:
+                - key: app
+                  operator: In
+                  values:
+                  - celebrity-booking-api
+              topologyKey: kubernetes.io/hostname
+      tolerations:
+      - key: node-role.kubernetes.io/spot
+        operator: Equal
+        value: "true"
+        effect: NoSchedule

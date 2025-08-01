@@ -12,6 +12,41 @@ dist
 dist-ssr
 *.local
 
+# Environment files with sensitive data - NEVER COMMIT
+.env
+.env.local
+.env.development
+.env.development.local
+.env.test
+.env.test.local
+.env.production
+.env.production.local
+.env.docker
+.env.docker.local
+.env.docker.production
+.env.secrets
+backend/.env
+backend/.env.local
+backend/.env.development
+backend/.env.production
+backend/.env.production.secure
+admin-dashboard/.env
+admin-dashboard/.env.local
+admin-dashboard/.env.development
+admin-dashboard/.env.production
+admin-dashboard/.env.production.secure
+
+# Docker sensitive files
+docker-compose.override.yml
+docker-compose.production.yml
+
+# N8N data directory (contains sensitive workflows)
+n8n-data/
+
+# Backup files
+*.backup
+*.bak
+
 # Editor directories and files
 .vscode/*
 !.vscode/extensions.json
@@ -22,3 +57,34 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+
+# Certificate files
+*.key
+*.crt
+*.pem
+*.p12
+
+# Database files
+*.db
+*.sqlite
+*.sqlite3
+
+# Test and debug files - SECURITY
+debug-*.html
+test-*.html
+minimal-*.html
+*-test.html
+*-debug.html
+simple-*.html
+standalone.html
+start-local-server.js
+debug-server.js
+debug-simple.js
+minimal-server.js
+quick-*.js
+test-*.js
+
+# Uploads and user content
+uploads/
+user-uploads/
+temp-uploads/

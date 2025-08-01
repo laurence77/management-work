@@ -58,12 +58,10 @@ export const SiteSettingsManager = ({ settings, onUpdate }: SiteSettingsManagerP
   };
 
   const handleSocialChange = (platform: string, value: string) => {
+    const fieldName = `social_${platform}`;
     setForm(prev => ({
       ...prev,
-      socialLinks: {
-        ...prev.socialLinks,
-        [platform]: value
-      }
+      [fieldName]: value
     }));
   };
 
@@ -179,7 +177,7 @@ export const SiteSettingsManager = ({ settings, onUpdate }: SiteSettingsManagerP
                     <Twitter className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-slate-400" />
                     <Input
                       id="twitter"
-                      value={form.socialLinks.twitter}
+                      value={form.social_twitter || ''}
                       onChange={(e) => handleSocialChange('twitter', e.target.value)}
                       className="pl-10"
                       placeholder="https://twitter.com/username"
@@ -193,7 +191,7 @@ export const SiteSettingsManager = ({ settings, onUpdate }: SiteSettingsManagerP
                     <Instagram className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-slate-400" />
                     <Input
                       id="instagram"
-                      value={form.socialLinks.instagram}
+                      value={form.social_instagram || ''}
                       onChange={(e) => handleSocialChange('instagram', e.target.value)}
                       className="pl-10"
                       placeholder="https://instagram.com/username"
@@ -207,7 +205,7 @@ export const SiteSettingsManager = ({ settings, onUpdate }: SiteSettingsManagerP
                     <Facebook className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-slate-400" />
                     <Input
                       id="facebook"
-                      value={form.socialLinks.facebook}
+                      value={form.social_facebook || ''}
                       onChange={(e) => handleSocialChange('facebook', e.target.value)}
                       className="pl-10"
                       placeholder="https://facebook.com/page"
@@ -221,7 +219,7 @@ export const SiteSettingsManager = ({ settings, onUpdate }: SiteSettingsManagerP
                     <Linkedin className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-slate-400" />
                     <Input
                       id="linkedin"
-                      value={form.socialLinks.linkedin}
+                      value={form.social_linkedin || ''}
                       onChange={(e) => handleSocialChange('linkedin', e.target.value)}
                       className="pl-10"
                       placeholder="https://linkedin.com/company/name"

@@ -8,6 +8,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Checkbox } from "@/components/ui/checkbox";
+import { showSuccess, showError } from "@/utils/toast-helpers";
 import { 
   Users, 
   Star, 
@@ -32,6 +33,9 @@ import {
 } from "lucide-react";
 
 const Management = () => {
+  const [showRepresentationModal, setShowRepresentationModal] = useState(false);
+  const [showConsultationModal, setShowConsultationModal] = useState(false);
+  const [loading, setLoading] = useState(false);
   const [formData, setFormData] = useState({
     fullName: "",
     email: "",
@@ -44,6 +48,16 @@ const Management = () => {
     socialFollowing: "",
     availableServices: [] as string[],
     additionalInfo: ""
+  });
+
+  const [consultationData, setConsultationData] = useState({
+    fullName: "",
+    email: "",
+    phone: "",
+    preferredDate: "",
+    preferredTime: "",
+    consultationType: "",
+    message: ""
   });
 
   const handleInputChange = (field: string, value: string) => {
@@ -62,11 +76,91 @@ const Management = () => {
     }));
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleConsultationInputChange = (field: string, value: string) => {
+    setConsultationData(prev => ({
+      ...prev,
+      [field]: value
+    }));
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    // Form submission logic will be added when API is ready
-    console.log("Form submitted:", formData);
-    alert("Application submitted successfully! We'll be in touch within 48 hours.");
+    setLoading(true);
+    
+    try {
+      const response = await fetch('http://localhost:3000/api/forms/representation', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(formData)
+      });
+
+      const result = await response.json();
+      
+      if (result.success) {
+        showSuccess("Application submitted successfully! We'll be in touch within 48 hours.", "Application Submitted");
+        setFormData({
+          fullName: "",
+          email: "",
+          phone: "",
+          category: "",
+          experience: "",
+          currentRepresentation: "",
+          goals: "",
+          portfolio: "",
+          socialFollowing: "",
+          availableServices: [],
+          additionalInfo: ""
+        });
+        setShowRepresentationModal(false);
+      } else {
+        showError("Failed to submit application. Please try again.");
+      }
+    } catch (error) {
+      console.error('Submission error:', error);
+      showError("Failed to submit application. Please try again.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleConsultationSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setLoading(true);
+    
+    try {
+      const response = await fetch('http://localhost:3000/api/forms/consultation', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(consultationData)
+      });
+
+      const result = await response.json();
+      
+      if (result.success) {
+        showSuccess("Consultation request submitted successfully! We'll contact you to confirm your appointment.", "Consultation Scheduled");
+        setConsultationData({
+          fullName: "",
+          email: "",
+          phone: "",
+          preferredDate: "",
+          preferredTime: "",
+          consultationType: "",
+          message: ""
+        });
+        setShowConsultationModal(false);
+      } else {
+        showError("Failed to submit consultation request. Please try again.");
+      }
+    } catch (error) {
+      console.error('Submission error:', error);
+      showError("Failed to submit consultation request. Please try again.");
+    } finally {
+      setLoading(false);
+    }
   };
 
   const managementServices = [
@@ -137,7 +231,7 @@ const Management = () => {
   ];
 
   return (
-    <div className="min-h-screen">
+    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900">
       <Header />
       
       {/* Hero Section */}
@@ -176,11 +270,11 @@ const Management = () => {
 
             {/* CTA Buttons */}
             <div className="flex flex-col sm:flex-row gap-4 justify-center px-4 fade-in" style={{ animationDelay: '0.3s' }}>
-              <Button className="btn-luxury text-lg px-8 py-4">
+              <Button className="btn-luxury text-lg px-8 py-4" onClick={() => setShowRepresentationModal(true)}>
                 Apply for Representation
                 <ArrowRight className="ml-2 h-5 w-5" />
               </Button>
-              <Button variant="ghost" className="btn-glass text-lg px-8 py-4">
+              <Button variant="ghost" className="btn-glass text-lg px-8 py-4" onClick={() => setShowConsultationModal(true)}>
                 <Phone className="mr-2 h-5 w-5" />
                 Schedule Consultation
               </Button>
@@ -551,11 +645,11 @@ const Management = () => {
               Join the elite circle of celebrities we represent. Let's build your legacy together.
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
-              <Button className="btn-luxury text-lg px-8 py-4">
+              <Button className="btn-luxury text-lg px-8 py-4" onClick={() => setShowRepresentationModal(true)}>
                 <Mail className="mr-2 h-5 w-5" />
                 Apply Now
               </Button>
-              <Button variant="ghost" className="btn-glass text-lg px-8 py-4">
+              <Button variant="ghost" className="btn-glass text-lg px-8 py-4" onClick={() => setShowConsultationModal(true)}>
                 <Phone className="mr-2 h-5 w-5" />
                 Schedule Call
               </Button>
@@ -565,6 +659,266 @@ const Management = () => {
       </section>
 
       <Footer />
+
+      {/* Representation Application Modal */}
+      {showRepresentationModal && (
+        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+          <Card className="w-full max-w-4xl max-h-[90vh] overflow-y-auto bg-card/90 backdrop-blur border border-white/10">
+            <CardHeader>
+              <div className="flex items-center justify-between">
+                <div>
+                  <CardTitle className="text-2xl">Apply for Representation</CardTitle>
+                  <CardDescription>
+                    Take the first step towards elevating your career to new heights.
+                  </CardDescription>
+                </div>
+                <Button variant="ghost" onClick={() => setShowRepresentationModal(false)} className="text-muted-foreground hover:text-foreground">
+                  ×
+                </Button>
+              </div>
+            </CardHeader>
+            <CardContent>
+              <form onSubmit={handleSubmit} className="space-y-6">
+                {/* Personal Information */}
+                <div className="space-y-4">
+                  <h3 className="text-lg font-semibold flex items-center gap-2">
+                    <Users className="h-5 w-5 text-primary" />
+                    Personal Information
+                  </h3>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                      <Label htmlFor="modal-fullName">Full Name *</Label>
+                      <Input
+                        id="modal-fullName"
+                        value={formData.fullName}
+                        onChange={(e) => handleInputChange('fullName', e.target.value)}
+                        className="glass bg-white/5 border-white/10"
+                        required
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="modal-email">Email Address *</Label>
+                      <Input
+                        id="modal-email"
+                        type="email"
+                        value={formData.email}
+                        onChange={(e) => handleInputChange('email', e.target.value)}
+                        className="glass bg-white/5 border-white/10"
+                        required
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="modal-phone">Phone Number *</Label>
+                      <Input
+                        id="modal-phone"
+                        value={formData.phone}
+                        onChange={(e) => handleInputChange('phone', e.target.value)}
+                        className="glass bg-white/5 border-white/10"
+                        required
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="modal-category">Primary Category *</Label>
+                      <Select value={formData.category} onValueChange={(value) => handleInputChange('category', value)}>
+                        <SelectTrigger className="glass bg-white/5 border-white/10">
+                          <SelectValue placeholder="Select your category" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {serviceCategories.map((category) => (
+                            <SelectItem key={category} value={category}>{category}</SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Professional Background */}
+                <div className="space-y-4">
+                  <h3 className="text-lg font-semibold flex items-center gap-2">
+                    <Briefcase className="h-5 w-5 text-primary" />
+                    Professional Background
+                  </h3>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                      <Label htmlFor="modal-experience">Years of Experience *</Label>
+                      <Select value={formData.experience} onValueChange={(value) => handleInputChange('experience', value)}>
+                        <SelectTrigger className="glass bg-white/5 border-white/10">
+                          <SelectValue placeholder="Select experience level" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="1-2">1-2 years</SelectItem>
+                          <SelectItem value="3-5">3-5 years</SelectItem>
+                          <SelectItem value="6-10">6-10 years</SelectItem>
+                          <SelectItem value="10+">10+ years</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="modal-socialFollowing">Social Media Following</Label>
+                      <Select value={formData.socialFollowing} onValueChange={(value) => handleInputChange('socialFollowing', value)}>
+                        <SelectTrigger className="glass bg-white/5 border-white/10">
+                          <SelectValue placeholder="Select following range" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="<10k">Less than 10K</SelectItem>
+                          <SelectItem value="10k-100k">10K - 100K</SelectItem>
+                          <SelectItem value="100k-1m">100K - 1M</SelectItem>
+                          <SelectItem value="1m+">1M+</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="modal-goals">Career Goals *</Label>
+                    <Textarea
+                      id="modal-goals"
+                      value={formData.goals}
+                      onChange={(e) => handleInputChange('goals', e.target.value)}
+                      className="glass bg-white/5 border-white/10"
+                      rows={3}
+                      placeholder="Describe your career goals..."
+                      required
+                    />
+                  </div>
+                </div>
+
+                {/* Submit Button */}
+                <div className="flex flex-col sm:flex-row gap-4 pt-6">
+                  <Button type="submit" className="btn-luxury flex-1" disabled={loading}>
+                    {loading ? 'Submitting...' : 'Submit Application'}
+                    {!loading && <ArrowRight className="ml-2 h-5 w-5" />}
+                  </Button>
+                  <Button type="button" variant="ghost" className="btn-glass" onClick={() => setShowRepresentationModal(false)}>
+                    Cancel
+                  </Button>
+                </div>
+              </form>
+            </CardContent>
+          </Card>
+        </div>
+      )}
+
+      {/* Consultation Modal */}
+      {showConsultationModal && (
+        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+          <Card className="w-full max-w-2xl bg-card/90 backdrop-blur border border-white/10">
+            <CardHeader>
+              <div className="flex items-center justify-between">
+                <div>
+                  <CardTitle className="text-2xl">Schedule Consultation</CardTitle>
+                  <CardDescription>
+                    Book a free consultation to discuss your career goals.
+                  </CardDescription>
+                </div>
+                <Button variant="ghost" onClick={() => setShowConsultationModal(false)} className="text-muted-foreground hover:text-foreground">
+                  ×
+                </Button>
+              </div>
+            </CardHeader>
+            <CardContent>
+              <form onSubmit={handleConsultationSubmit} className="space-y-6">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="consultation-fullName">Full Name *</Label>
+                    <Input
+                      id="consultation-fullName"
+                      value={consultationData.fullName}
+                      onChange={(e) => handleConsultationInputChange('fullName', e.target.value)}
+                      className="glass bg-white/5 border-white/10"
+                      required
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="consultation-email">Email Address *</Label>
+                    <Input
+                      id="consultation-email"
+                      type="email"
+                      value={consultationData.email}
+                      onChange={(e) => handleConsultationInputChange('email', e.target.value)}
+                      className="glass bg-white/5 border-white/10"
+                      required
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="consultation-phone">Phone Number *</Label>
+                    <Input
+                      id="consultation-phone"
+                      value={consultationData.phone}
+                      onChange={(e) => handleConsultationInputChange('phone', e.target.value)}
+                      className="glass bg-white/5 border-white/10"
+                      required
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="consultation-type">Consultation Type *</Label>
+                    <Select value={consultationData.consultationType} onValueChange={(value) => handleConsultationInputChange('consultationType', value)}>
+                      <SelectTrigger className="glass bg-white/5 border-white/10">
+                        <SelectValue placeholder="Select consultation type" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="career-strategy">Career Strategy</SelectItem>
+                        <SelectItem value="representation">Representation Inquiry</SelectItem>
+                        <SelectItem value="booking-opportunity">Booking Opportunity</SelectItem>
+                        <SelectItem value="general">General Consultation</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="consultation-date">Preferred Date *</Label>
+                    <Input
+                      id="consultation-date"
+                      type="date"
+                      value={consultationData.preferredDate}
+                      onChange={(e) => handleConsultationInputChange('preferredDate', e.target.value)}
+                      className="glass bg-white/5 border-white/10"
+                      required
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="consultation-time">Preferred Time *</Label>
+                    <Select value={consultationData.preferredTime} onValueChange={(value) => handleConsultationInputChange('preferredTime', value)}>
+                      <SelectTrigger className="glass bg-white/5 border-white/10">
+                        <SelectValue placeholder="Select time slot" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="09:00">9:00 AM</SelectItem>
+                        <SelectItem value="10:00">10:00 AM</SelectItem>
+                        <SelectItem value="11:00">11:00 AM</SelectItem>
+                        <SelectItem value="14:00">2:00 PM</SelectItem>
+                        <SelectItem value="15:00">3:00 PM</SelectItem>
+                        <SelectItem value="16:00">4:00 PM</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="consultation-message">Additional Information</Label>
+                  <Textarea
+                    id="consultation-message"
+                    value={consultationData.message}
+                    onChange={(e) => handleConsultationInputChange('message', e.target.value)}
+                    className="glass bg-white/5 border-white/10"
+                    rows={3}
+                    placeholder="Tell us about your goals or any specific topics you'd like to discuss..."
+                  />
+                </div>
+
+                {/* Submit Button */}
+                <div className="flex flex-col sm:flex-row gap-4 pt-6">
+                  <Button type="submit" className="btn-luxury flex-1" disabled={loading}>
+                    {loading ? 'Booking...' : 'Schedule Consultation'}
+                    {!loading && <Calendar className="ml-2 h-5 w-5" />}
+                  </Button>
+                  <Button type="button" variant="ghost" className="btn-glass" onClick={() => setShowConsultationModal(false)}>
+                    Cancel
+                  </Button>
+                </div>
+              </form>
+            </CardContent>
+          </Card>
+        </div>
+      )}
     </div>
   );
 };

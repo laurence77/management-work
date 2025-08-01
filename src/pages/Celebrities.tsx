@@ -4,6 +4,8 @@ import { Header } from "@/components/layout/Header";
 import { Footer } from "@/components/layout/Footer";
 import { LiveChat } from "@/components/shared/LiveChat";
 import { Button } from "@/components/ui/button";
+import { BookingForm } from "@/components/booking/BookingForm";
+import { showSuccess, showError, showBookingSuccess, showBookingError } from "@/utils/toast-helpers";
 
 const celebrities = [
   {
@@ -55,25 +57,130 @@ const categories = [
   "Authors"
 ];
 
+const locations = {
+  "United States": {
+    "California": ["Los Angeles", "San Francisco", "San Diego", "Sacramento", "Oakland", "Fresno"],
+    "New York": ["New York City", "Buffalo", "Rochester", "Syracuse", "Albany"],
+    "Texas": ["Houston", "Dallas", "Austin", "San Antonio", "Fort Worth"],
+    "Florida": ["Miami", "Orlando", "Tampa", "Jacksonville", "Fort Lauderdale"],
+    "Illinois": ["Chicago", "Aurora", "Peoria", "Rockford"],
+    "Nevada": ["Las Vegas", "Reno", "Henderson"],
+    "Georgia": ["Atlanta", "Augusta", "Columbus", "Savannah"],
+    "Tennessee": ["Nashville", "Memphis", "Knoxville", "Chattanooga"],
+    "Colorado": ["Denver", "Colorado Springs", "Aurora", "Fort Collins"],
+    "Arizona": ["Phoenix", "Tucson", "Mesa", "Chandler"]
+  },
+  "Canada": {
+    "Ontario": ["Toronto", "Ottawa", "Hamilton", "London", "Windsor"],
+    "British Columbia": ["Vancouver", "Victoria", "Surrey", "Burnaby"],
+    "Quebec": ["Montreal", "Quebec City", "Laval", "Gatineau"],
+    "Alberta": ["Calgary", "Edmonton", "Red Deer"]
+  },
+  "United Kingdom": {
+    "England": ["London", "Manchester", "Birmingham", "Leeds", "Liverpool", "Bristol"],
+    "Scotland": ["Edinburgh", "Glasgow", "Aberdeen", "Dundee"],
+    "Wales": ["Cardiff", "Swansea", "Newport"],
+    "Northern Ireland": ["Belfast", "Londonderry"]
+  },
+  "Australia": {
+    "New South Wales": ["Sydney", "Newcastle", "Wollongong"],
+    "Victoria": ["Melbourne", "Geelong", "Ballarat"],
+    "Queensland": ["Brisbane", "Gold Coast", "Cairns"],
+    "Western Australia": ["Perth", "Fremantle"]
+  },
+  "Germany": {
+    "Bavaria": ["Munich", "Nuremberg", "Augsburg"],
+    "North Rhine-Westphalia": ["Cologne", "Düsseldorf", "Dortmund"],
+    "Berlin": ["Berlin"],
+    "Hamburg": ["Hamburg"]
+  },
+  "France": {
+    "Île-de-France": ["Paris", "Versailles"],
+    "Provence-Alpes-Côte d'Azur": ["Nice", "Marseille", "Cannes"],
+    "Auvergne-Rhône-Alpes": ["Lyon", "Grenoble"]
+  }
+};
+
 const CelebrityPage = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("All Categories");
   const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
   const [showFilters, setShowFilters] = useState(false);
+  const [selectedCelebrity, setSelectedCelebrity] = useState<any>(null);
+  const [showBookingForm, setShowBookingForm] = useState(false);
+  const [selectedCountry, setSelectedCountry] = useState("Any Country");
+  const [selectedState, setSelectedState] = useState("Any State");
+  const [selectedCity, setSelectedCity] = useState("Any City");
+
+  // Get available states based on selected country
+  const getAvailableStates = () => {
+    if (selectedCountry === "Any Country") return [];
+    return Object.keys(locations[selectedCountry as keyof typeof locations] || {});
+  };
+
+  // Get available cities based on selected state
+  const getAvailableCities = () => {
+    if (selectedCountry === "Any Country" || selectedState === "Any State") return [];
+    const countryData = locations[selectedCountry as keyof typeof locations];
+    return countryData?.[selectedState as keyof typeof countryData] || [];
+  };
+
+  // Reset dependent dropdowns when parent changes
+  const handleCountryChange = (country: string) => {
+    setSelectedCountry(country);
+    setSelectedState("Any State");
+    setSelectedCity("Any City");
+  };
+
+  const handleStateChange = (state: string) => {
+    setSelectedState(state);
+    setSelectedCity("Any City");
+  };
+
+  const handleBookingSubmit = async (bookingData: any) => {
+    try {
+      const response = await fetch('/api/bookings/with-payment', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${localStorage.getItem('authToken')}`
+        },
+        body: JSON.stringify(bookingData)
+      });
+      
+      if (response.ok) {
+        showBookingSuccess();
+        showSuccess('We will contact you within 24 hours.');
+        setShowBookingForm(false);
+        setSelectedCelebrity(null);
+      } else {
+        const error = await response.json();
+        showBookingError();
+      }
+    } catch (error) {
+      console.error('Booking submission error:', error);
+      showBookingError();
+    }
+  };
+
+  const handleBookCelebrity = (celebrity: any) => {
+    setSelectedCelebrity(celebrity);
+    setShowBookingForm(true);
+  };
 
   return (
-    <div className="min-h-screen">
+    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900">
       <Header />
       
       {/* Hero Section */}
-      <section className="pt-32 pb-16 bg-gradient-hero">
+      <section className="pt-32 pb-16">
         <div className="container mx-auto px-6">
           <div className="text-center max-w-3xl mx-auto mb-12">
-            <h1 className="text-4xl md:text-6xl font-bold mb-6">
+            <h1 className="text-4xl md:text-6xl font-bold mb-6 text-white">
               Browse Our
               <span className="text-gradient-primary"> Celebrity Roster</span>
             </h1>
-            <p className="text-xl text-muted-foreground">
+            <p className="text-xl text-slate-300">
               Discover and connect with over 2,000 verified celebrities worldwide
             </p>
           </div>
@@ -139,35 +246,89 @@ const CelebrityPage = () => {
 
             {/* Advanced Filters */}
             {showFilters && (
-              <div className="mt-6 pt-6 border-t border-white/10 grid grid-cols-1 md:grid-cols-3 gap-4">
-                <div>
-                  <label className="block text-sm font-medium text-foreground mb-2">Price Range</label>
-                  <select className="w-full px-3 py-2 bg-white/5 border border-white/10 rounded-lg text-foreground">
-                    <option>Any Price</option>
-                    <option>Under $25K</option>
-                    <option>$25K - $50K</option>
-                    <option>$50K - $100K</option>
-                    <option>$100K+</option>
-                  </select>
+              <div className="mt-6 pt-6 border-t border-white/10 space-y-4">
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  <div>
+                    <label className="block text-sm font-medium text-foreground mb-2">Price Range</label>
+                    <select className="w-full px-3 py-2 bg-white/5 border border-white/10 rounded-lg text-foreground">
+                      <option>Any Price</option>
+                      <option>Under $25K</option>
+                      <option>$25K - $50K</option>
+                      <option>$50K - $100K</option>
+                      <option>$100K+</option>
+                    </select>
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-foreground mb-2">Availability</label>
+                    <select className="w-full px-3 py-2 bg-white/5 border border-white/10 rounded-lg text-foreground">
+                      <option>Any Availability</option>
+                      <option>Available Now</option>
+                      <option>Limited Availability</option>
+                      <option>Booking Soon</option>
+                    </select>
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-foreground mb-2">Event Type</label>
+                    <select className="w-full px-3 py-2 bg-white/5 border border-white/10 rounded-lg text-foreground">
+                      <option>Any Event Type</option>
+                      <option>Corporate Events</option>
+                      <option>Private Parties</option>
+                      <option>Weddings</option>
+                      <option>Product Launches</option>
+                      <option>Charity Events</option>
+                      <option>Virtual Events</option>
+                    </select>
+                  </div>
                 </div>
+                
+                {/* Location Filters */}
                 <div>
-                  <label className="block text-sm font-medium text-foreground mb-2">Availability</label>
-                  <select className="w-full px-3 py-2 bg-white/5 border border-white/10 rounded-lg text-foreground">
-                    <option>Any Availability</option>
-                    <option>Available Now</option>
-                    <option>Limited Availability</option>
-                    <option>Booking Soon</option>
-                  </select>
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-foreground mb-2">Location</label>
-                  <select className="w-full px-3 py-2 bg-white/5 border border-white/10 rounded-lg text-foreground">
-                    <option>Any Location</option>
-                    <option>Los Angeles</option>
-                    <option>New York</option>
-                    <option>London</option>
-                    <option>Toronto</option>
-                  </select>
+                  <label className="block text-sm font-medium text-foreground mb-3">Location Filters</label>
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div>
+                      <label className="block text-xs text-muted-foreground mb-1">Country</label>
+                      <select 
+                        value={selectedCountry}
+                        onChange={(e) => handleCountryChange(e.target.value)}
+                        className="w-full px-3 py-2 bg-white/5 border border-white/10 rounded-lg text-foreground"
+                      >
+                        <option>Any Country</option>
+                        {Object.keys(locations).map(country => (
+                          <option key={country} value={country}>{country}</option>
+                        ))}
+                      </select>
+                    </div>
+                    
+                    <div>
+                      <label className="block text-xs text-muted-foreground mb-1">State/Province</label>
+                      <select 
+                        value={selectedState}
+                        onChange={(e) => handleStateChange(e.target.value)}
+                        disabled={selectedCountry === "Any Country"}
+                        className="w-full px-3 py-2 bg-white/5 border border-white/10 rounded-lg text-foreground disabled:opacity-50"
+                      >
+                        <option>Any State</option>
+                        {getAvailableStates().map(state => (
+                          <option key={state} value={state}>{state}</option>
+                        ))}
+                      </select>
+                    </div>
+                    
+                    <div>
+                      <label className="block text-xs text-muted-foreground mb-1">City</label>
+                      <select 
+                        value={selectedCity}
+                        onChange={(e) => setSelectedCity(e.target.value)}
+                        disabled={selectedState === "Any State"}
+                        className="w-full px-3 py-2 bg-white/5 border border-white/10 rounded-lg text-foreground disabled:opacity-50"
+                      >
+                        <option>Any City</option>
+                        {getAvailableCities().map(city => (
+                          <option key={city} value={city}>{city}</option>
+                        ))}
+                      </select>
+                    </div>
+                  </div>
                 </div>
               </div>
             )}
@@ -270,8 +431,11 @@ const CelebrityPage = () => {
                     <span className="text-xl font-bold text-gradient-primary">
                       {celebrity.price}
                     </span>
-                    <Button className="btn-luxury">
-                      View Profile
+                    <Button 
+                      className="btn-luxury"
+                      onClick={() => handleBookCelebrity(celebrity)}
+                    >
+                      Book Now
                       <ArrowRight className="ml-2 h-4 w-4" />
                     </Button>
                   </div>
@@ -293,6 +457,18 @@ const CelebrityPage = () => {
 
       <Footer />
       <LiveChat />
+      
+      {/* Booking Form Modal */}
+      {showBookingForm && selectedCelebrity && (
+        <BookingForm
+          celebrity={selectedCelebrity}
+          onSubmit={handleBookingSubmit}
+          onClose={() => {
+            setShowBookingForm(false);
+            setSelectedCelebrity(null);
+          }}
+        />
+      )}
     </div>
   );
 };

@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Booking Confirmation</title>
+    <style>
+        body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }
+        .container { max-width: 600px; margin: 0 auto; padding: 20px; }
+        .header { background: #059669; color: white; padding: 20px; text-align: center; }
+        .content { padding: 20px; background: #f9fafb; }
+        .booking-details { background: white; padding: 15px; border-radius: 8px; margin: 15px 0; border-left: 4px solid #059669; }
+        .footer { padding: 20px; text-align: center; font-size: 14px; color: #666; }
+        .button { background: #059669; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px; display: inline-block; margin: 10px 0; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>Booking Confirmed!</h1>
+        </div>
+        <div class="content">
+            <h2>Your booking has been confirmed</h2>
+            <p>Hi {{clientName}},</p>
+            <p>Great news! Your booking request has been confirmed. Here are the details:</p>
+            
+            <div class="booking-details">
+                <h3>Booking Details</h3>
+                <p><strong>Booking ID:</strong> {{bookingId}}</p>
+                <p><strong>Celebrity:</strong> {{celebrityName}}</p>
+                <p><strong>Event Date:</strong> {{eventDate}}</p>
+                <p><strong>Event Time:</strong> {{eventTime}}</p>
+                <p><strong>Location:</strong> {{eventLocation}}</p>
+                <p><strong>Duration:</strong> {{duration}}</p>
+                <p><strong>Total Amount:</strong> ${{totalAmount}}</p>
+                <p><strong>Status:</strong> {{status}}</p>
+            </div>
+            
+            <p>Next steps:</p>
+            <ul>
+                <li>Review the contract details in your dashboard</li>
+                <li>Complete the payment process</li>
+                <li>Coordinate event logistics with our team</li>
+            </ul>
+            
+            <a href="{{bookingUrl}}" class="button">View Booking Details</a>
+            
+            <p>Our team will be in touch shortly to coordinate the final details.</p>
+            
+            <p>Best regards,<br>The Celebrity Booking Platform Team</p>
+        </div>
+        <div class="footer">
+            <p>&copy; 2024 Celebrity Booking Platform. All rights reserved.</p>
+            <p><a href="{{supportUrl}}">Contact Support</a></p>
+        </div>
+    </div>
+</body>
+</html>

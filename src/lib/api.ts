@@ -53,7 +53,35 @@ class ApiClient {
       }
 
       if (data.success && data.data) {
-        return data.data;
+        // Map backend response to frontend interface
+        const backendData = data.data;
+        return {
+          site_name: backendData.siteName || 'Celebrity Booking Platform',
+          tagline: 'Connect with Elite Celebrities',
+          description: backendData.siteDescription || 'Book the world\'s top celebrities for your events',
+          contact_email: backendData.contactEmail || 'management@bookmyreservation.org',
+          contact_phone: backendData.contactPhone || '+1 (555) 123-4567',
+          address: 'Beverly Hills, CA 90210',
+          social_twitter: backendData.socialMedia?.twitter || 'https://twitter.com/celebritybooking',
+          social_instagram: backendData.socialMedia?.instagram || 'https://instagram.com/celebritybooking',
+          social_facebook: backendData.socialMedia?.facebook || 'https://facebook.com/celebritybooking',
+          social_linkedin: backendData.socialMedia?.linkedin || '',
+          footer_company_description: backendData.footer_company_description || 'Leading celebrity booking platform',
+          footer_copyright: backendData.footer_copyright || '© 2024 EliteConnect. All rights reserved.',
+          footer_services_title: backendData.footer_services_title || 'Services',
+          footer_services_links: backendData.footer_services_links || [],
+          footer_support_title: backendData.footer_support_title || 'Support',
+          footer_support_links: backendData.footer_support_links || [],
+          footer_legal_links: backendData.footer_legal_links || [],
+          newsletter_enabled: backendData.newsletter_enabled || true,
+          newsletter_title: backendData.newsletter_title || 'Stay Updated',
+          newsletter_description: backendData.newsletter_description || 'Get the latest celebrity booking news',
+          meta_title: backendData.meta_title || 'EliteConnect - Celebrity Bookings',
+          meta_description: backendData.meta_description || 'Book celebrities for your events',
+          meta_keywords: backendData.meta_keywords || 'celebrity,booking,events',
+          created_at: backendData.created_at || new Date().toISOString(),
+          updated_at: backendData.updated_at || new Date().toISOString()
+        };
       }
 
       throw new Error('Invalid response format');

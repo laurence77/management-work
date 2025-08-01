@@ -1,0 +1,176 @@
+{
+  "name": "Customer Journey Optimizer",
+  "nodes": [
+    {
+      "parameters": {
+        "path": "user-behavior",
+        "responseMode": "onReceived",
+        "options": {}
+      },
+      "id": "UserBehaviorWebhook",
+      "name": "User Behavior Trigger",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 1,
+      "position": [200, 300],
+      "webhookId": "user-behavior"
+    },
+    {
+      "parameters": {
+        "functionCode": "// Customer Journey Analysis\nconst event = $input.first().json;\nconst userId = event.user_id;\nconst eventType = event.event;\nconst timestamp = new Date().toISOString();\n\n// Log the behavior event to Supabase\nconst behaviorLog = {\n  user_id: userId,\n  event_type: eventType,\n  event_data: event,\n  timestamp: timestamp,\n  session_id: event.session_id || 'unknown',\n  celebrity_id: event.celebrity_id || null,\n  booking_id: event.booking_id || null\n};\n\n// Determine next actions based on event type\nlet actions = [];\n\nswitch(eventType) {\n  case 'booking_view':\n    actions.push('track_interest');\n    if (event.view_duration > 30) {\n      actions.push('high_interest_detected');\n    }\n    break;\n    \n  case 'booking_started':\n    actions.push('track_conversion_attempt');\n    actions.push('start_abandonment_timer');\n    break;\n    \n  case 'booking_abandoned':\n    actions.push('send_recovery_email');\n    actions.push('trigger_follow_up_sequence');\n    break;\n    \n  case 'booking_completed':\n    actions.push('celebrate_conversion');\n    actions.push('send_confirmation');\n    actions.push('upsell_recommendations');\n    break;\n    \n  case 'page_exit':\n    if (event.time_on_page > 60) {\n      actions.push('retarget_campaign');\n    }\n    break;\n}\n\nreturn [{\n  json: {\n    ...behaviorLog,\n    actions: actions,\n    priority: eventType === 'booking_abandoned' ? 'high' : 'medium',\n    workflow_id: 'customer-journey-001'\n  }\n}];"
+      },
+      "id": "AnalyzeBehavior",
+      "name": "Analyze Journey",
+      "type": "n8n-nodes-base.function",
+      "typeVersion": 1,
+      "position": [400, 300]
+    },
+    {
+      "parameters": {
+        "url": "https://rhatsyvvhizeqzusyblu.supabase.co/rest/v1/user_behavior",
+        "method": "POST",
+        "responseFormat": "json",
+        "headerParametersUi": {
+          "parameter": [
+            {
+              "name": "apikey",
+              "value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJoYXRzeXZ2aGl6ZXF6dXN5Ymx1Iiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc1Mjg1MDI2MSwiZXhwIjoyMDY4NDI2MjYxfQ.7_JeyY35h3QfQmdJ3ms4IxIZrog6JS446HuJPIdUSv8"
+            },
+            {
+              "name": "Authorization",
+              "value": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJoYXRzeXZ2aGl6ZXF6dXN5Ymx1Iiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc1Mjg1MDI2MSwiZXhwIjoyMDY4NDI2MjYxfQ.7_JeyY35h3QfQmdJ3ms4IxIZrog6JS446HuJPIdUSv8"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "jsonParameters": true,
+        "bodyParametersJson": "{\n  \"user_id\": \"{{ $json.user_id }}\",\n  \"event_type\": \"{{ $json.event_type }}\",\n  \"event_data\": {{ $json.event_data }},\n  \"session_id\": \"{{ $json.session_id }}\",\n  \"celebrity_id\": \"{{ $json.celebrity_id }}\",\n  \"booking_id\": \"{{ $json.booking_id }}\",\n  \"timestamp\": \"{{ $json.timestamp }}\"\n}"
+      },
+      "id": "LogToSupabase",
+      "name": "Log to Supabase",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 1,
+      "position": [600, 300]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "string": [
+            {
+              "value1": "={{ $json.event_type }}",
+              "operation": "equal",
+              "value2": "booking_abandoned"
+            }
+          ]
+        }
+      },
+      "id": "CheckIfAbandoned",
+      "name": "Check If Abandoned",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 1,
+      "position": [800, 300]
+    },
+    {
+      "parameters": {
+        "url": "https://rhatsyvvhizeqzusyblu.supabase.co/rest/v1/abandoned_bookings?select=*",
+        "responseFormat": "json",
+        "headerParametersUi": {
+          "parameter": [
+            {
+              "name": "apikey",
+              "value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJoYXRzeXZ2aGl6ZXF6dXN5Ymx1Iiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc1Mjg1MDI2MSwiZXhwIjoyMDY4NDI2MjYxfQ.7_JeyY35h3QfQmdJ3ms4IxIZrog6JS446HuJPIdUSv8"
+            },
+            {
+              "name": "Authorization",
+              "value": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJoYXRzeXZ2aGl6ZXF6dXN5Ymx1Iiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc1Mjg1MDI2MSwiZXhwIjoyMDY4NDI2MjYxfQ.7_JeyY35h3QfQmdJ3ms4IxIZrog6JS446HuJPIdUSv8"
+            }
+          ]
+        }
+      },
+      "id": "GetAbandonedBookings",
+      "name": "Get Abandoned Bookings",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 1,
+      "position": [1000, 200]
+    },
+    {
+      "parameters": {
+        "functionCode": "// Generate personalized recovery email\nconst abandonedBooking = $input.first().json;\nconst userEmail = abandonedBooking.user_email || 'management@bookmyreservation.org';\nconst userName = abandonedBooking.user_name || 'Valued Customer';\nconst budget = abandonedBooking.budget || 'Not specified';\nconst hoursAbandoned = Math.round(parseFloat(abandonedBooking.hours_since_abandonment) || 0);\n\n// Create personalized message based on abandonment time\nlet urgencyMessage = '';\nlet incentive = '';\n\nif (hoursAbandoned < 1) {\n  urgencyMessage = 'We noticed you were just browsing our celebrity bookings!';\n  incentive = 'Complete your booking in the next hour and get 5% off!';\n} else if (hoursAbandoned < 24) {\n  urgencyMessage = 'Your celebrity booking is still waiting for you!';\n  incentive = 'Limited time offer: 10% discount if you complete today!';\n} else {\n  urgencyMessage = 'Miss your chance to book your dream celebrity?';\n  incentive = 'Special comeback offer: 15% off your booking!';\n}\n\nconst emailContent = `\nDear ${userName},\n\n${urgencyMessage}\n\n🌟 Booking Details:\n• Budget: $${budget}\n• Celebrity: ${abandonedBooking.celebrity_name || 'Premium Celebrity'}\n• Time since abandonment: ${hoursAbandoned} hours\n\n${incentive}\n\n[Complete Your Booking Now] - http://localhost:8080/booking/${abandonedBooking.booking_id}\n\nDon't let this opportunity slip away!\n\nBest regards,\nThe BookMyReservation Team\n`;\n\nreturn [{\n  json: {\n    to: userEmail,\n    subject: `🎭 ${userName}, your celebrity booking awaits! (${hoursAbandoned}h ago)`,\n    content: emailContent,\n    user_id: abandonedBooking.user_id,\n    booking_id: abandonedBooking.booking_id,\n    recovery_type: 'abandoned_booking_email'\n  }\n}];"
+      },
+      "id": "GenerateRecoveryEmail",
+      "name": "Generate Recovery Email",
+      "type": "n8n-nodes-base.function",
+      "typeVersion": 1,
+      "position": [1200, 200]
+    },
+    {
+      "parameters": {
+        "url": "http://host.docker.internal:3001/api/webhooks/n8n/automation-result",
+        "method": "POST",
+        "responseFormat": "json",
+        "jsonParameters": true,
+        "bodyParametersJson": "{\n  \"workflow_id\": \"customer-journey-001\",\n  \"result\": {\n    \"event_type\": \"{{ $json.event_type }}\",\n    \"user_id\": \"{{ $json.user_id }}\",\n    \"actions_taken\": {{ $json.actions }},\n    \"priority\": \"{{ $json.priority }}\"\n  },\n  \"success\": true,\n  \"timestamp\": \"{{ new Date().toISOString() }}\"\n}"
+      },
+      "id": "SendResult",
+      "name": "Send Result",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 1,
+      "position": [600, 500]
+    },
+    {
+      "parameters": {
+        "url": "http://host.docker.internal:3001/api/webhooks/n8n/user-behavior",
+        "method": "POST",
+        "responseFormat": "json",
+        "jsonParameters": true,
+        "bodyParametersJson": "{\n  \"workflow_id\": \"customer-journey-001\",\n  \"action\": \"recovery_email_sent\",\n  \"user_id\": \"{{ $json.user_id }}\",\n  \"booking_id\": \"{{ $json.booking_id }}\",\n  \"email_subject\": \"{{ $json.subject }}\",\n  \"recovery_type\": \"{{ $json.recovery_type }}\",\n  \"timestamp\": \"{{ new Date().toISOString() }}\"\n}"
+      },
+      "id": "LogRecoveryAction",
+      "name": "Log Recovery Action",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 1,
+      "position": [1400, 200]
+    }
+  ],
+  "connections": {
+    "User Behavior Trigger": {
+      "main": [
+        [{ "node": "Analyze Journey", "type": "main", "index": 0 }]
+      ]
+    },
+    "Analyze Journey": {
+      "main": [
+        [
+          { "node": "Log to Supabase", "type": "main", "index": 0 },
+          { "node": "Send Result", "type": "main", "index": 0 }
+        ]
+      ]
+    },
+    "Log to Supabase": {
+      "main": [
+        [{ "node": "Check If Abandoned", "type": "main", "index": 0 }]
+      ]
+    },
+    "Check If Abandoned": {
+      "main": [
+        [{ "node": "Get Abandoned Bookings", "type": "main", "index": 0 }],
+        []
+      ]
+    },
+    "Get Abandoned Bookings": {
+      "main": [
+        [{ "node": "Generate Recovery Email", "type": "main", "index": 0 }]
+      ]
+    },
+    "Generate Recovery Email": {
+      "main": [
+        [{ "node": "Log Recovery Action", "type": "main", "index": 0 }]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {},
+  "id": "customer-journey-optimizer"
+}

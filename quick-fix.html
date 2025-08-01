@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Quick Fix - Stop Reloading</title>
+    <style>
+        body { font-family: monospace; margin: 20px; text-align: center; }
+        .big { font-size: 24px; margin: 20px 0; }
+        .success { color: green; font-weight: bold; }
+        .info { color: blue; }
+        button { padding: 15px 30px; font-size: 18px; margin: 10px; cursor: pointer; }
+        #log { text-align: left; background: #f0f0f0; padding: 15px; margin: 20px 0; height: 300px; overflow-y: scroll; }
+    </style>
+</head>
+<body>
+    <h1>🚑 Quick Fix - Stop Auto-Reloading</h1>
+    <div class="big info">This will permanently fix the reloading issue</div>
+    
+    <button onclick="fixReloading()" style="background: red; color: white; font-weight: bold;">
+        🔧 FIX RELOADING NOW
+    </button>
+    
+    <div id="status"></div>
+    <div id="log"></div>
+    
+    <script>
+        function log(message) {
+            const logDiv = document.getElementById('log');
+            const timestamp = new Date().toLocaleTimeString();
+            logDiv.innerHTML += `[${timestamp}] ${message}\n`;
+            logDiv.scrollTop = logDiv.scrollHeight;
+            console.log(message);
+        }
+        
+        async function fixReloading() {
+            document.getElementById('status').innerHTML = '<div class="big info">🔄 Fixing reloading issue...</div>';
+            
+            log('🔍 Starting Service Worker removal...');
+            
+            if ('serviceWorker' in navigator) {
+                try {
+                    const registrations = await navigator.serviceWorker.getRegistrations();
+                    log(`Found ${registrations.length} service worker registrations`);
+                    
+                    if (registrations.length === 0) {
+                        log('✅ No service workers found - already clean!');
+                        document.getElementById('status').innerHTML = '<div class="big success">✅ Already Fixed!</div>';
+                        return;
+                    }
+                    
+                    // Unregister all service workers
+                    for (let i = 0; i < registrations.length; i++) {
+                        const registration = registrations[i];
+                        log(`🗑️ Unregistering SW ${i + 1}: ${registration.scope}`);
+                        
+                        const success = await registration.unregister();
+                        if (success) {
+                            log(`✅ Successfully unregistered SW ${i + 1}`);
+                        } else {
+                            log(`❌ Failed to unregister SW ${i + 1}`);
+                        }
+                    }
+                    
+                    log('🎉 All service workers unregistered!');
+                    
+                    // Clear caches
+                    if ('caches' in window) {
+                        const cacheNames = await caches.keys();
+                        log(`🧹 Clearing ${cacheNames.length} caches...`);
+                        
+                        for (const cacheName of cacheNames) {
+                            await caches.delete(cacheName);
+                            log(`🗑️ Deleted cache: ${cacheName}`);
+                        }
+                        log('✅ All caches cleared');
+                    }
+                    
+                    // Clear storage
+                    localStorage.clear();
+                    sessionStorage.clear();
+                    log('✅ Browser storage cleared');
+                    
+                    document.getElementById('status').innerHTML = '<div class="big success">🎯 RELOADING FIXED!</div>';
+                    log('🎯 Service worker cleanup complete!');
+                    log('💡 The auto-reloading issue should now be resolved');
+                    log('🔄 You can now use the admin dashboard without constant reloads');
+                    
+                } catch (error) {
+                    log(`❌ Error during cleanup: ${error.message}`);
+                    document.getElementById('status').innerHTML = '<div style="color: red;">❌ Fix Failed</div>';
+                }
+            } else {
+                log('ℹ️ Service Worker API not supported');
+                document.getElementById('status').innerHTML = '<div class="big success">✅ No Service Workers to Remove</div>';
+            }
+        }
+        
+        // Auto-run the fix
+        log('🚑 Quick Fix tool loaded');
+        log('💡 Click "FIX RELOADING NOW" to stop the auto-reloading issue');
+    </script>
+</body>
+</html>

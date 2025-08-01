@@ -1,4 +1,4 @@
-import { useState } from "react";
+import React, { useState } from "react";
 import { Header } from "@/components/layout/Header";
 import { Footer } from "@/components/layout/Footer";
 import { Button } from "@/components/ui/button";
@@ -6,6 +6,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { showSuccess, showError, showBookingSuccess, showBookingError } from "@/utils/toast-helpers";
 import { 
   Calendar, 
   MapPin, 
@@ -23,11 +24,21 @@ import {
   Sparkles
 } from "lucide-react";
 
-const Events = () => {
+const Events: React.FC = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedCity, setSelectedCity] = useState("all");
   const [selectedCategory, setSelectedCategory] = useState("all");
   const [selectedMonth, setSelectedMonth] = useState("all");
+  const [showBookingModal, setShowBookingModal] = useState(false);
+  const [selectedEvent, setSelectedEvent] = useState<any>(null);
+  const [bookingData, setBookingData] = useState({
+    fullName: '',
+    email: '',
+    phone: '',
+    ticketQuantity: 1,
+    specialRequests: ''
+  });
+  const [loading, setLoading] = useState(false);
 
   const cities = ["Los Angeles", "New York", "London", "Paris", "Tokyo", "Dubai"];
   const categories = ["Concert", "Gala", "Premiere", "Awards", "Fashion", "Charity"];
@@ -192,8 +203,197 @@ const Events = () => {
     }
   };
 
+  const handleBookTickets = (event: any) => {
+    setSelectedEvent(event);
+    setShowBookingModal(true);
+  };
+
+  const handleBookingSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setLoading(true);
+
+    try {
+      const response = await fetch('http://localhost:3000/api/bookings/create', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          eventId: selectedEvent.id,
+          eventTitle: selectedEvent.title,
+          eventDate: selectedEvent.date,
+          eventTime: selectedEvent.time,
+          eventLocation: selectedEvent.location,
+          celebrity: selectedEvent.celebrity,
+          price: selectedEvent.price,
+          ...bookingData
+        })
+      });
+
+      const result = await response.json();
+      
+      if (result.success) {
+        showBookingSuccess(result.data.bookingId);
+        showSuccess('You will receive a confirmation email shortly.');
+        setShowBookingModal(false);
+        setBookingData({
+          fullName: '',
+          email: '',
+          phone: '',
+          ticketQuantity: 1,
+          specialRequests: ''
+        });
+      } else {
+        showBookingError();
+      }
+    } catch (error) {
+      console.error('Booking error:', error);
+      showBookingError();
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const BookingModal = () => {
+    if (!showBookingModal || !selectedEvent) return null;
+
+    return (
+      <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+        <div className="glass-card max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+          <div className="p-6">
+            <div className="flex justify-between items-center mb-6">
+              <h2 className="text-2xl font-bold">Book Tickets - {selectedEvent.title}</h2>
+              <Button 
+                variant="ghost" 
+                onClick={() => setShowBookingModal(false)}
+                className="text-gray-400 hover:text-white"
+              >
+                ×
+              </Button>
+            </div>
+
+            {/* Event Details */}
+            <div className="glass-card p-4 mb-6">
+              <div className="flex items-center space-x-4 mb-4">
+                <div className="text-center">
+                  <div className="text-2xl font-bold text-primary">{formatDate(selectedEvent.date).day}</div>
+                  <div className="text-sm text-muted-foreground">{formatDate(selectedEvent.date).month}</div>
+                </div>
+                <div className="flex-1">
+                  <h3 className="font-semibold text-lg">{selectedEvent.title}</h3>
+                  <p className="text-sm text-muted-foreground">{selectedEvent.celebrity}</p>
+                  <p className="text-sm text-muted-foreground">{selectedEvent.location}, {selectedEvent.city}</p>
+                  <p className="text-sm text-muted-foreground">{selectedEvent.time}</p>
+                </div>
+                <div className="text-right">
+                  <div className="text-2xl font-bold text-primary">{selectedEvent.price}</div>
+                  <div className="text-sm text-muted-foreground">{selectedEvent.ticketsLeft} tickets left</div>
+                </div>
+              </div>
+            </div>
+
+            {/* Booking Form */}
+            <form onSubmit={handleBookingSubmit} className="space-y-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-medium mb-2">Full Name *</label>
+                  <Input
+                    type="text"
+                    required
+                    value={bookingData.fullName}
+                    onChange={(e) => setBookingData(prev => ({ ...prev, fullName: e.target.value }))}
+                    placeholder="Enter your full name"
+                    className="glass bg-white/5 border-white/10"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium mb-2">Email Address *</label>
+                  <Input
+                    type="email"
+                    required
+                    value={bookingData.email}
+                    onChange={(e) => setBookingData(prev => ({ ...prev, email: e.target.value }))}
+                    placeholder="Enter your email"
+                    className="glass bg-white/5 border-white/10"
+                  />
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-medium mb-2">Phone Number</label>
+                  <Input
+                    type="tel"
+                    value={bookingData.phone}
+                    onChange={(e) => setBookingData(prev => ({ ...prev, phone: e.target.value }))}
+                    placeholder="Enter your phone number"
+                    className="glass bg-white/5 border-white/10"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium mb-2">Number of Tickets</label>
+                  <select
+                    value={bookingData.ticketQuantity}
+                    onChange={(e) => setBookingData(prev => ({ ...prev, ticketQuantity: parseInt(e.target.value) }))}
+                    className="w-full p-3 glass bg-white/5 border border-white/10 rounded-lg"
+                  >
+                    {[1,2,3,4,5,6,7,8,9,10].map(num => (
+                      <option key={num} value={num}>{num} ticket{num > 1 ? 's' : ''}</option>
+                    ))}
+                  </select>
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium mb-2">Special Requests (Optional)</label>
+                <textarea
+                  value={bookingData.specialRequests}
+                  onChange={(e) => setBookingData(prev => ({ ...prev, specialRequests: e.target.value }))}
+                  placeholder="Any special requirements or requests..."
+                  rows={3}
+                  className="w-full p-3 glass bg-white/5 border border-white/10 rounded-lg resize-none"
+                />
+              </div>
+
+              {/* Total Price */}
+              <div className="glass-card p-4">
+                <div className="flex justify-between items-center">
+                  <span className="text-lg font-medium">Total Price:</span>
+                  <span className="text-2xl font-bold text-primary">
+                    ${(parseInt(selectedEvent.price.replace('$', '').replace(',', '')) * bookingData.ticketQuantity).toLocaleString()}
+                  </span>
+                </div>
+                <p className="text-sm text-muted-foreground mt-2">
+                  {bookingData.ticketQuantity} ticket{bookingData.ticketQuantity > 1 ? 's' : ''} × {selectedEvent.price} each
+                </p>
+              </div>
+
+              <div className="flex gap-4 pt-4">
+                <Button 
+                  type="button" 
+                  variant="ghost" 
+                  onClick={() => setShowBookingModal(false)}
+                  className="flex-1"
+                >
+                  Cancel
+                </Button>
+                <Button 
+                  type="submit" 
+                  disabled={loading}
+                  className="btn-luxury flex-1"
+                >
+                  {loading ? 'Processing...' : 'Confirm Booking'}
+                </Button>
+              </div>
+            </form>
+          </div>
+        </div>
+      </div>
+    );
+  };
+
   return (
-    <div className="min-h-screen">
+    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900">
       <Header />
       
       {/* Hero Section */}
@@ -328,7 +528,10 @@ const Events = () => {
                       </div>
                     </div>
                     
-                    <Button className="btn-luxury w-full group">
+                    <Button 
+                      className="btn-luxury w-full group"
+                      onClick={() => handleBookTickets(event)}
+                    >
                       Get Tickets
                       <ArrowRight className="ml-2 h-4 w-4 group-hover:translate-x-1 transition-transform" />
                     </Button>
@@ -454,7 +657,10 @@ const Events = () => {
                       </div>
                     </div>
                     
-                    <Button className="btn-luxury w-full">
+                    <Button 
+                      className="btn-luxury w-full"
+                      onClick={() => handleBookTickets(event)}
+                    >
                       Get Tickets
                     </Button>
                   </CardContent>
@@ -511,6 +717,7 @@ const Events = () => {
       </section>
 
       <Footer />
+      <BookingModal />
     </div>
   );
 };

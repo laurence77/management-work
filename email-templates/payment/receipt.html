@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Payment Receipt</title>
+    <style>
+        body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }
+        .container { max-width: 600px; margin: 0 auto; padding: 20px; }
+        .header { background: #7c3aed; color: white; padding: 20px; text-align: center; }
+        .content { padding: 20px; background: #f9fafb; }
+        .receipt-details { background: white; padding: 15px; border-radius: 8px; margin: 15px 0; }
+        .footer { padding: 20px; text-align: center; font-size: 14px; color: #666; }
+        .amount { font-size: 24px; font-weight: bold; color: #059669; }
+        table { width: 100%; border-collapse: collapse; margin: 15px 0; }
+        th, td { padding: 10px; text-align: left; border-bottom: 1px solid #ddd; }
+        th { background: #f3f4f6; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>Payment Receipt</h1>
+        </div>
+        <div class="content">
+            <h2>Payment Successful</h2>
+            <p>Hi {{clientName}},</p>
+            <p>Thank you for your payment. Your transaction has been processed successfully.</p>
+            
+            <div class="receipt-details">
+                <h3>Payment Details</h3>
+                <p><strong>Transaction ID:</strong> {{transactionId}}</p>
+                <p><strong>Date:</strong> {{paymentDate}}</p>
+                <p><strong>Amount Paid:</strong> <span class="amount">${{amountPaid}}</span></p>
+                <p><strong>Payment Method:</strong> {{paymentMethod}}</p>
+                <p><strong>Status:</strong> {{paymentStatus}}</p>
+            </div>
+            
+            <div class="receipt-details">
+                <h3>Booking Information</h3>
+                <table>
+                    <tr>
+                        <th>Description</th>
+                        <th>Amount</th>
+                    </tr>
+                    <tr>
+                        <td>{{celebrityName}} - {{eventDate}}</td>
+                        <td>${{bookingAmount}}</td>
+                    </tr>
+                    {{#if platformFee}}
+                    <tr>
+                        <td>Platform Fee</td>
+                        <td>${{platformFee}}</td>
+                    </tr>
+                    {{/if}}
+                    {{#if taxes}}
+                    <tr>
+                        <td>Taxes</td>
+                        <td>${{taxes}}</td>
+                    </tr>
+                    {{/if}}
+                    <tr style="border-top: 2px solid #333; font-weight: bold;">
+                        <td>Total</td>
+                        <td>${{totalAmount}}</td>
+                    </tr>
+                </table>
+            </div>
+            
+            <p>This receipt serves as confirmation of your payment. Please keep it for your records.</p>
+            
+            <p>Best regards,<br>The Celebrity Booking Platform Team</p>
+        </div>
+        <div class="footer">
+            <p>&copy; 2024 Celebrity Booking Platform. All rights reserved.</p>
+            <p><a href="{{supportUrl}}">Contact Support</a></p>
+        </div>
+    </div>
+</body>
+</html>

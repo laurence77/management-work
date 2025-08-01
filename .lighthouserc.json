@@ -1,0 +1,69 @@
+{
+  "ci": {
+    "collect": {
+      "url": [
+        "https://celebrity-booking.com",
+        "https://celebrity-booking.com/celebrities",
+        "https://celebrity-booking.com/booking",
+        "https://celebrity-booking.com/admin"
+      ],
+      "startServerCommand": "npm run preview",
+      "startServerReadyPattern": "Local:.*:(\\d+)",
+      "startServerReadyTimeout": 30000
+    },
+    "assert": {
+      "preset": "lighthouse:recommended",
+      "assertions": {
+        "first-contentful-paint": ["error", {"maxNumericValue": 2000}],
+        "largest-contentful-paint": ["error", {"maxNumericValue": 2500}],
+        "cumulative-layout-shift": ["error", {"maxNumericValue": 0.1}],
+        "speed-index": ["error", {"maxNumericValue": 3000}],
+        "interactive": ["error", {"maxNumericValue": 3500}],
+        "total-blocking-time": ["error", {"maxNumericValue": 300}],
+        
+        "uses-http2": "error",
+        "uses-passive-listeners": "error",
+        "uses-rel-preconnect": "warn",
+        "uses-responsive-images": "error",
+        "efficient-animated-content": "error",
+        "offscreen-images": "error",
+        "render-blocking-resources": "error",
+        "unminified-css": "error",
+        "unminified-javascript": "error",
+        "unused-css-rules": "warn",
+        "unused-javascript": "warn",
+        "modern-image-formats": "warn",
+        "uses-optimized-images": "error",
+        "uses-text-compression": "error",
+        "uses-rel-preload": "warn",
+        
+        "color-contrast": "error",
+        "document-title": "error",
+        "html-has-lang": "error",
+        "image-alt": "error",
+        "label": "error",
+        "link-name": "error",
+        "list": "error",
+        "meta-description": "error",
+        "heading-order": "error",
+        "landmark-one-main": "error",
+        "page-has-heading-one": "error",
+        "skip-link": "error",
+        
+        "is-on-https": "error",
+        "redirects-http": "error",
+        "service-worker": "error",
+        "splash-screen": "error",
+        "themed-omnibox": "error",
+        "content-width": "error",
+        "viewport": "error",
+        "without-javascript": "error",
+        "apple-touch-icon": "error",
+        "maskable-icon": "error"
+      }
+    },
+    "upload": {
+      "target": "temporary-public-storage"
+    }
+  }
+}

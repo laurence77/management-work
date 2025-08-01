@@ -4,6 +4,11 @@ import { Footer } from "@/components/layout/Footer";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { showSuccess, showError, showBookingSuccess, showBookingError } from "@/utils/toast-helpers";
 import { 
   Star, 
   Users, 
@@ -15,11 +20,143 @@ import {
   Heart,
   CheckCircle,
   ArrowRight,
-  Sparkles
+  Sparkles,
+  Calendar,
+  Phone,
+  Mail
 } from "lucide-react";
 
 const Services = () => {
   const [selectedCategory, setSelectedCategory] = useState("all");
+  const [showConsultationModal, setShowConsultationModal] = useState(false);
+  const [showServiceModal, setShowServiceModal] = useState(false);
+  const [selectedService, setSelectedService] = useState(null);
+  const [loading, setLoading] = useState(false);
+  
+  const [consultationData, setConsultationData] = useState({
+    fullName: "",
+    email: "",
+    phone: "",
+    preferredDate: "",
+    preferredTime: "",
+    consultationType: "",
+    message: ""
+  });
+
+  const [serviceRequestData, setServiceRequestData] = useState({
+    fullName: "",
+    email: "",
+    phone: "",
+    eventDate: "",
+    eventType: "",
+    budget: "",
+    requirements: ""
+  });
+
+  const handleConsultationInputChange = (field: string, value: string) => {
+    setConsultationData(prev => ({
+      ...prev,
+      [field]: value
+    }));
+  };
+
+  const handleServiceInputChange = (field: string, value: string) => {
+    setServiceRequestData(prev => ({
+      ...prev,
+      [field]: value
+    }));
+  };
+
+  const handleConsultationSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setLoading(true);
+    
+    try {
+      const response = await fetch('http://localhost:3000/api/forms/consultation', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(consultationData)
+      });
+
+      const result = await response.json();
+      
+      if (result.success) {
+        showSuccess("Consultation request submitted successfully! We'll contact you to confirm your appointment.");
+        setConsultationData({
+          fullName: "",
+          email: "",
+          phone: "",
+          preferredDate: "",
+          preferredTime: "",
+          consultationType: "",
+          message: ""
+        });
+        setShowConsultationModal(false);
+      } else {
+        showError("Failed to submit consultation request. Please try again.");
+      }
+    } catch (error) {
+      console.error('Submission error:', error);
+      showError("Failed to submit consultation request. Please try again.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleServiceRequest = (service: any) => {
+    setSelectedService(service);
+    setServiceRequestData(prev => ({
+      ...prev,
+      eventType: service.title
+    }));
+    setShowServiceModal(true);
+  };
+
+  const handleServiceSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setLoading(true);
+    
+    try {
+      const response = await fetch('http://localhost:3000/api/forms/service-request', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          ...serviceRequestData,
+          serviceId: selectedService?.id,
+          serviceName: selectedService?.title
+        })
+      });
+
+      const result = await response.json();
+      
+      if (result.success) {
+        showBookingSuccess();
+        showSuccess("We'll contact you with a customized quote.");
+        setServiceRequestData({
+          fullName: "",
+          email: "",
+          phone: "",
+          eventDate: "",
+          eventType: "",
+          budget: "",
+          requirements: ""
+        });
+        setShowServiceModal(false);
+        setSelectedService(null);
+      } else {
+        showBookingError();
+      }
+    } catch (error) {
+      console.error('Submission error:', error);
+      showBookingError();
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const categories = [
     { id: "all", name: "All Services", count: 12 },
@@ -132,7 +269,7 @@ const Services = () => {
     : services.filter(service => service.category === selectedCategory);
 
   return (
-    <div className="min-h-screen">
+    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900">
       <Header />
       
       {/* Hero Section */}
@@ -247,7 +384,7 @@ const Services = () => {
                     ))}
                   </div>
                   
-                  <Button className="btn-luxury w-full group">
+                  <Button className="btn-luxury w-full group" onClick={() => handleServiceRequest(service)}>
                     Request This Service
                     <ArrowRight className="ml-2 h-4 w-4 group-hover:translate-x-1 transition-transform" />
                   </Button>
@@ -339,11 +476,11 @@ const Services = () => {
               Let us help you create an unforgettable celebrity experience that exceeds your wildest dreams.
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
-              <Button className="btn-luxury text-lg px-8 py-4">
+              <Button className="btn-luxury text-lg px-8 py-4" onClick={() => setShowConsultationModal(true)}>
                 Start Your Journey
                 <ArrowRight className="ml-2 h-5 w-5" />
               </Button>
-              <Button variant="ghost" className="btn-glass text-lg px-8 py-4">
+              <Button variant="ghost" className="btn-glass text-lg px-8 py-4" onClick={() => setShowConsultationModal(true)}>
                 Schedule Consultation
               </Button>
             </div>
@@ -352,6 +489,239 @@ const Services = () => {
       </section>
 
       <Footer />
+
+      {/* Consultation Modal */}
+      {showConsultationModal && (
+        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+          <Card className="w-full max-w-2xl bg-card/90 backdrop-blur border border-white/10">
+            <CardHeader>
+              <div className="flex items-center justify-between">
+                <div>
+                  <CardTitle className="text-2xl">Schedule Consultation</CardTitle>
+                  <CardDescription>
+                    Book a free consultation to discuss your celebrity service needs.
+                  </CardDescription>
+                </div>
+                <Button variant="ghost" onClick={() => setShowConsultationModal(false)} className="text-muted-foreground hover:text-foreground">
+                  ×
+                </Button>
+              </div>
+            </CardHeader>
+            <CardContent>
+              <form onSubmit={handleConsultationSubmit} className="space-y-6">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="consultation-fullName">Full Name *</Label>
+                    <Input
+                      id="consultation-fullName"
+                      value={consultationData.fullName}
+                      onChange={(e) => handleConsultationInputChange('fullName', e.target.value)}
+                      className="glass bg-white/5 border-white/10"
+                      required
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="consultation-email">Email Address *</Label>
+                    <Input
+                      id="consultation-email"
+                      type="email"
+                      value={consultationData.email}
+                      onChange={(e) => handleConsultationInputChange('email', e.target.value)}
+                      className="glass bg-white/5 border-white/10"
+                      required
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="consultation-phone">Phone Number *</Label>
+                    <Input
+                      id="consultation-phone"
+                      value={consultationData.phone}
+                      onChange={(e) => handleConsultationInputChange('phone', e.target.value)}
+                      className="glass bg-white/5 border-white/10"
+                      required
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="consultation-type">Service Interest *</Label>
+                    <Select value={consultationData.consultationType} onValueChange={(value) => handleConsultationInputChange('consultationType', value)}>
+                      <SelectTrigger className="glass bg-white/5 border-white/10">
+                        <SelectValue placeholder="Select service type" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="personal">Personal Services</SelectItem>
+                        <SelectItem value="brand">Brand Partnerships</SelectItem>
+                        <SelectItem value="events">Event Bookings</SelectItem>
+                        <SelectItem value="general">General Inquiry</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="consultation-date">Preferred Date *</Label>
+                    <Input
+                      id="consultation-date"
+                      type="date"
+                      value={consultationData.preferredDate}
+                      onChange={(e) => handleConsultationInputChange('preferredDate', e.target.value)}
+                      className="glass bg-white/5 border-white/10"
+                      required
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="consultation-time">Preferred Time *</Label>
+                    <Select value={consultationData.preferredTime} onValueChange={(value) => handleConsultationInputChange('preferredTime', value)}>
+                      <SelectTrigger className="glass bg-white/5 border-white/10">
+                        <SelectValue placeholder="Select time slot" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="09:00">9:00 AM</SelectItem>
+                        <SelectItem value="10:00">10:00 AM</SelectItem>
+                        <SelectItem value="11:00">11:00 AM</SelectItem>
+                        <SelectItem value="14:00">2:00 PM</SelectItem>
+                        <SelectItem value="15:00">3:00 PM</SelectItem>
+                        <SelectItem value="16:00">4:00 PM</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="consultation-message">Tell us about your needs</Label>
+                  <Textarea
+                    id="consultation-message"
+                    value={consultationData.message}
+                    onChange={(e) => handleConsultationInputChange('message', e.target.value)}
+                    className="glass bg-white/5 border-white/10"
+                    rows={3}
+                    placeholder="Describe the celebrity service you're looking for..."
+                  />
+                </div>
+
+                <div className="flex flex-col sm:flex-row gap-4 pt-6">
+                  <Button type="submit" className="btn-luxury flex-1" disabled={loading}>
+                    {loading ? 'Booking...' : 'Schedule Consultation'}
+                    {!loading && <Calendar className="ml-2 h-5 w-5" />}
+                  </Button>
+                  <Button type="button" variant="ghost" className="btn-glass" onClick={() => setShowConsultationModal(false)}>
+                    Cancel
+                  </Button>
+                </div>
+              </form>
+            </CardContent>
+          </Card>
+        </div>
+      )}
+
+      {/* Service Request Modal */}
+      {showServiceModal && selectedService && (
+        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+          <Card className="w-full max-w-2xl bg-card/90 backdrop-blur border border-white/10">
+            <CardHeader>
+              <div className="flex items-center justify-between">
+                <div>
+                  <CardTitle className="text-2xl">Request {selectedService.title}</CardTitle>
+                  <CardDescription>
+                    {selectedService.description}
+                  </CardDescription>
+                </div>
+                <Button variant="ghost" onClick={() => setShowServiceModal(false)} className="text-muted-foreground hover:text-foreground">
+                  ×
+                </Button>
+              </div>
+            </CardHeader>
+            <CardContent>
+              <form onSubmit={handleServiceSubmit} className="space-y-6">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="service-fullName">Full Name *</Label>
+                    <Input
+                      id="service-fullName"
+                      value={serviceRequestData.fullName}
+                      onChange={(e) => handleServiceInputChange('fullName', e.target.value)}
+                      className="glass bg-white/5 border-white/10"
+                      required
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="service-email">Email Address *</Label>
+                    <Input
+                      id="service-email"
+                      type="email"
+                      value={serviceRequestData.email}
+                      onChange={(e) => handleServiceInputChange('email', e.target.value)}
+                      className="glass bg-white/5 border-white/10"
+                      required
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="service-phone">Phone Number *</Label>
+                    <Input
+                      id="service-phone"
+                      value={serviceRequestData.phone}
+                      onChange={(e) => handleServiceInputChange('phone', e.target.value)}
+                      className="glass bg-white/5 border-white/10"
+                      required
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="service-date">Event Date *</Label>
+                    <Input
+                      id="service-date"
+                      type="date"
+                      value={serviceRequestData.eventDate}
+                      onChange={(e) => handleServiceInputChange('eventDate', e.target.value)}
+                      className="glass bg-white/5 border-white/10"
+                      required
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="service-budget">Budget Range *</Label>
+                    <Select value={serviceRequestData.budget} onValueChange={(value) => handleServiceInputChange('budget', value)}>
+                      <SelectTrigger className="glass bg-white/5 border-white/10">
+                        <SelectValue placeholder="Select budget range" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="under-10k">Under $10,000</SelectItem>
+                        <SelectItem value="10k-50k">$10,000 - $50,000</SelectItem>
+                        <SelectItem value="50k-100k">$50,000 - $100,000</SelectItem>
+                        <SelectItem value="100k-plus">$100,000+</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="service-requirements">Special Requirements</Label>
+                  <Textarea
+                    id="service-requirements"
+                    value={serviceRequestData.requirements}
+                    onChange={(e) => handleServiceInputChange('requirements', e.target.value)}
+                    className="glass bg-white/5 border-white/10"
+                    rows={3}
+                    placeholder="Tell us about your event, specific celebrity preferences, or any special requirements..."
+                  />
+                </div>
+
+                <div className="bg-primary/10 border border-primary/20 rounded-lg p-4">
+                  <h4 className="font-semibold text-primary mb-2">Service Details:</h4>
+                  <p className="text-sm text-muted-foreground mb-2">{selectedService.description}</p>
+                  <div className="flex justify-between items-center">
+                    <span className="text-lg font-bold text-primary">{selectedService.price}</span>
+                    <span className="text-sm text-muted-foreground">{selectedService.duration}</span>
+                  </div>
+                </div>
+
+                <div className="flex flex-col sm:flex-row gap-4 pt-6">
+                  <Button type="submit" className="btn-luxury flex-1" disabled={loading}>
+                    {loading ? 'Submitting...' : 'Submit Request'}
+                    {!loading && <Mail className="ml-2 h-5 w-5" />}
+                  </Button>
+                  <Button type="button" variant="ghost" className="btn-glass" onClick={() => setShowServiceModal(false)}>
+                    Cancel
+                  </Button>
+                </div>
+              </form>
+            </CardContent>
+          </Card>
+        </div>
+      )}
     </div>
   );
 };

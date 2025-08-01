@@ -1,9 +1,20 @@
 import { useState } from "react";
 import { Search, Star, ArrowRight, Play, Shield, Clock, Crown } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { useNavigate } from "react-router-dom";
+import { SITE_CONFIG } from "@/config/branding";
 
 export const Hero = () => {
   const [searchTerm, setSearchTerm] = useState("");
+  const navigate = useNavigate();
+
+  const handleSearch = () => {
+    navigate(`/celebrities?search=${encodeURIComponent(searchTerm)}`);
+  };
+
+  const handleExploreCelebrities = () => {
+    navigate('/celebrities');
+  };
 
   return (
     <section className="min-h-screen flex items-center justify-center relative overflow-hidden pt-20">
@@ -28,15 +39,14 @@ export const Hero = () => {
           {/* Main Headline */}
           <div className="space-y-4 md:space-y-6 slide-up">
             <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl xl:text-7xl font-bold leading-tight">
-              Connect with
+              {SITE_CONFIG.tagline.split(' ').slice(0, 2).join(' ')}
               <span className="text-gradient-primary block">
-                Celebrity Icons
+                {SITE_CONFIG.tagline.split(' ').slice(2, 4).join(' ')}
               </span>
-              Worldwide
+              {SITE_CONFIG.tagline.split(' ').slice(4).join(' ')}
             </h1>
             <p className="text-lg sm:text-xl md:text-2xl text-muted-foreground max-w-3xl mx-auto leading-relaxed px-4 sm:px-0">
-              The world's most exclusive celebrity booking platform. From intimate meetings 
-              to grand events, we make the impossible possible.
+              {SITE_CONFIG.description}
             </p>
           </div>
 
@@ -54,7 +64,10 @@ export const Hero = () => {
                     className="w-full pl-12 pr-4 py-3 sm:py-4 bg-transparent text-foreground placeholder:text-muted-foreground focus:outline-none text-base sm:text-lg"
                   />
                 </div>
-                <Button className="btn-luxury h-12 px-6 sm:px-8 w-full sm:w-auto">
+                <Button 
+                  className="btn-luxury h-12 px-6 sm:px-8 w-full sm:w-auto"
+                  onClick={handleSearch}
+                >
                   <Search className="h-5 w-5 mr-2" />
                   Search
                 </Button>
@@ -64,7 +77,10 @@ export const Hero = () => {
 
           {/* CTA Buttons */}
           <div className="flex flex-col sm:flex-row items-center justify-center gap-4 sm:gap-6 px-4 fade-in" style={{ animationDelay: '0.5s' }}>
-            <Button className="btn-luxury text-base sm:text-lg px-6 sm:px-8 py-3 sm:py-4 w-full sm:w-auto">
+            <Button 
+              className="btn-luxury text-base sm:text-lg px-6 sm:px-8 py-3 sm:py-4 w-full sm:w-auto"
+              onClick={handleExploreCelebrities}
+            >
               Explore Celebrities
               <ArrowRight className="ml-2 h-4 sm:h-5 w-4 sm:w-5" />
             </Button>
@@ -78,25 +94,25 @@ export const Hero = () => {
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6 md:gap-8 max-w-4xl mx-auto mt-12 md:mt-16 px-4 fade-in" style={{ animationDelay: '0.7s' }}>
             <div className="glass-card text-center p-6 md:p-8 hover:bg-white/10 transition-all duration-300">
               <Shield className="h-10 md:h-12 w-10 md:w-12 text-primary mx-auto mb-3 md:mb-4" />
-              <h3 className="text-lg md:text-xl font-semibold mb-2">Verified & Secure</h3>
+              <h3 className="text-lg md:text-xl font-semibold mb-2">{SITE_CONFIG.features.security.title}</h3>
               <p className="text-sm md:text-base text-muted-foreground">
-                All celebrities verified with bank-grade security protocols
+                {SITE_CONFIG.features.security.description}
               </p>
             </div>
             
             <div className="glass-card text-center p-6 md:p-8 hover:bg-white/10 transition-all duration-300">
               <Clock className="h-10 md:h-12 w-10 md:w-12 text-primary mx-auto mb-3 md:mb-4" />
-              <h3 className="text-lg md:text-xl font-semibold mb-2">24/7 Concierge</h3>
+              <h3 className="text-lg md:text-xl font-semibold mb-2">{SITE_CONFIG.features.support.title}</h3>
               <p className="text-sm md:text-base text-muted-foreground">
-                Dedicated support team available around the clock
+                {SITE_CONFIG.features.support.description}
               </p>
             </div>
             
             <div className="glass-card text-center p-6 md:p-8 hover:bg-white/10 transition-all duration-300">
               <Crown className="h-10 md:h-12 w-10 md:w-12 text-primary mx-auto mb-3 md:mb-4" />
-              <h3 className="text-lg md:text-xl font-semibold mb-2">Exclusive Access</h3>
+              <h3 className="text-lg md:text-xl font-semibold mb-2">{SITE_CONFIG.features.access.title}</h3>
               <p className="text-sm md:text-base text-muted-foreground">
-                Direct connections to A-list celebrities and rising stars
+                {SITE_CONFIG.features.access.description}
               </p>
             </div>
           </div>
@@ -104,19 +120,19 @@ export const Hero = () => {
           {/* Stats */}
           <div className="grid grid-cols-2 md:grid-cols-4 gap-6 md:gap-8 max-w-3xl mx-auto mt-12 md:mt-16 px-4 fade-in" style={{ animationDelay: '0.9s' }}>
             <div className="text-center">
-              <div className="text-2xl sm:text-3xl md:text-4xl font-bold text-gradient-primary">2000+</div>
+              <div className="text-2xl sm:text-3xl md:text-4xl font-bold text-gradient-primary">{SITE_CONFIG.stats.celebrities}</div>
               <div className="text-sm md:text-base text-muted-foreground">Celebrities</div>
             </div>
             <div className="text-center">
-              <div className="text-2xl sm:text-3xl md:text-4xl font-bold text-gradient-primary">50K+</div>
+              <div className="text-2xl sm:text-3xl md:text-4xl font-bold text-gradient-primary">{SITE_CONFIG.stats.bookings}</div>
               <div className="text-sm md:text-base text-muted-foreground">Bookings</div>
             </div>
             <div className="text-center">
-              <div className="text-2xl sm:text-3xl md:text-4xl font-bold text-gradient-primary">150+</div>
+              <div className="text-2xl sm:text-3xl md:text-4xl font-bold text-gradient-primary">{SITE_CONFIG.stats.countries}</div>
               <div className="text-sm md:text-base text-muted-foreground">Countries</div>
             </div>
             <div className="text-center">
-              <div className="text-2xl sm:text-3xl md:text-4xl font-bold text-gradient-primary">99.9%</div>
+              <div className="text-2xl sm:text-3xl md:text-4xl font-bold text-gradient-primary">{SITE_CONFIG.stats.successRate}</div>
               <div className="text-sm md:text-base text-muted-foreground">Success Rate</div>
             </div>
           </div>
