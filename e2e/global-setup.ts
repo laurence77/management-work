@@ -9,8 +9,8 @@ async function globalSetup(config: FullConfig) {
   try {
     // Health check for backend API
     console.log('⚕️ Checking backend health...');
-    const backendUrl = process.env.BACKEND_URL || 'http://localhost:8000';
-    const response = await page.goto(`${backendUrl}/health`);
+    const backendUrl = process.env.BACKEND_URL || 'http://localhost:3000';
+    const response = await page.goto(`${backendUrl}/api/health`);
     
     if (!response?.ok()) {
       throw new Error(`Backend health check failed: ${response?.status()}`);
@@ -36,7 +36,7 @@ async function globalSetup(config: FullConfig) {
     // Authenticate and store session
     console.log('🔐 Authenticating test user...');
     
-    await page.goto(`${process.env.E2E_BASE_URL || 'http://localhost:4173'}/login`);
+    await page.goto(`${process.env.E2E_BASE_URL || 'http://localhost:5173'}/login`);
     
     await page.fill('[data-testid="email-input"]', 'test@example.com');
     await page.fill('[data-testid="password-input"]', 'test-password-123');

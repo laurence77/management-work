@@ -9,10 +9,10 @@ export default defineConfig(({ mode }) => ({
   base: './',
   server: {
     host: "0.0.0.0",
-    port: 8080,
+    port: 5173,
     hmr: {
       // Reduce aggressive reloading
-      clientPort: 8080,
+      clientPort: 5173,
       overlay: false,
       timeout: 10000
     },

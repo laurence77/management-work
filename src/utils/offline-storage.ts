@@ -437,6 +437,9 @@ class OfflineStorageManager {
 // Export singleton instance
 export const offlineStorage = new OfflineStorageManager();
 
+// Export class for testing
+export { OfflineStorageManager };
+
 // Export types for use in components
 export type {
   OfflineData,

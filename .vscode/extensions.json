@@ -1,0 +1,40 @@
+{
+  "recommendations": [
+    // Language Support
+    "ms-vscode.vscode-typescript-next",
+    "bradlc.vscode-tailwindcss",
+    "ms-vscode.vscode-json",
+    
+    // React/Frontend
+    "dsznajder.es7-react-js-snippets",
+    "formulahendry.auto-rename-tag",
+    "christian-kohler.path-intellisense",
+    
+    // Testing
+    "ms-vscode.vscode-jest",
+    "ms-playwright.playwright",
+    "hbenl.vscode-test-explorer",
+    
+    // Code Quality
+    "dbaeumer.vscode-eslint",
+    "esbenp.prettier-vscode",
+    "ms-vscode.vscode-eslint",
+    
+    // Git & Version Control
+    "eamodio.gitlens",
+    "github.vscode-pull-request-github",
+    
+    // Environment & Config
+    "mikestead.dotenv",
+    "redhat.vscode-yaml",
+    
+    // Database
+    "supabase.supabase-vscode",
+    
+    // Development Tools
+    "ms-vscode.vscode-npm-script",
+    "christian-kohler.npm-intellisense",
+    "bradlc.vscode-tailwindcss",
+    "ms-vscode.live-server"
+  ]
+}

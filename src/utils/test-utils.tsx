@@ -233,7 +233,7 @@ export const apiMocks = {
   },
 
   resetFetch: () => {
-    if (global.fetch && typeof global.fetch.mockRestore === 'function') {
+    if (global.fetch && typeof (global.fetch as any).mockRestore === 'function') {
       (global.fetch as jest.Mock).mockRestore();
     }
   }

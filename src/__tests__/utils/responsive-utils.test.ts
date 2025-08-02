@@ -280,7 +280,7 @@ describe('Responsive Utilities', () => {
     });
 
     test('works with only base class', () => {
-      const result = responsiveClass('text-base');
+      const result = responsiveClass('text-base', {});
 
       expect(result).toBe('text-base');
     });

@@ -11,7 +11,7 @@ async function globalTeardown(config: FullConfig) {
     // Clean up test data
     console.log('🗑️ Cleaning up test data...');
     
-    const backendUrl = process.env.BACKEND_URL || 'http://localhost:8000';
+    const backendUrl = process.env.BACKEND_URL || 'http://localhost:3000';
     
     // Clean up test bookings
     await page.goto(`${backendUrl}/api/bookings/test-cleanup`, {
@@ -46,7 +46,7 @@ async function globalTeardown(config: FullConfig) {
       const reportData = {
         timestamp: new Date().toISOString(),
         environment: process.env.NODE_ENV || 'test',
-        baseUrl: process.env.E2E_BASE_URL || 'http://localhost:4173',
+        baseUrl: process.env.E2E_BASE_URL || 'http://localhost:5173',
         backendUrl: backendUrl,
         cleanup: {
           testData: 'completed',
